@@ -1,0 +1,220 @@
+//+ 个人中心主页样式
+.profile-page {
+    min-height: 100vh;
+    background-color: #f5f6f8;
+    padding-bottom: 50px; //+ 底部TabBar高度
+}
+
+//+ 用户头部区域
+.user-header {
+    position: relative;
+    padding-bottom: 1rem;
+    height: 10rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  
+    justify-content: flex-end;
+}
+
+//+ 背景图
+.bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    
+    height: 10rem;
+    overflow: hidden;
+    border-radius: 0 0 0.8rem 0.8rem;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    //+ 自下而上的渐变：黑色→灰色→透明
+    .bg-gradient {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(60,60,60,0.3) 40%, rgba(120,120,120,0.1) 70%, rgba(200,200,200,0) 100%);
+    }
+}
+
+//+ 用户信息区
+.user-info {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+
+    .user-detail {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 0.8rem;
+        flex: 1;
+    }
+        .edit-icon {
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+        }
+                .nickname {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #fff;
+                    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+                }
+
+
+    .signature {
+        margin-top: 0.1rem;
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.85);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+}
+
+//+ 社交数据区
+.social-stats {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-around;
+
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.9);
+            margin-top: 0.15rem;
+        }
+    }
+}
+
+//+ 功能入口区
+.menu-section {
+    margin-top: 0.5rem;
+    background-color: #fff;
+    border-radius: 0.8rem 0.8rem 0 0;
+    overflow: hidden;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:active {
+        background-color: #f8f8f8;
+    }
+
+    .menu-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .menu-icon {
+        width: 1.5rem;
+        text-align: center;
+        color: #676968;
+        margin-right: 0.4rem;
+    }
+
+    .menu-text {
+        font-size: 0.76rem;
+        color: #111827;
+        font-weight: 350;
+    }
+
+    .menu-arrow {
+        font-size: 1.5rem;
+        color: #696767;
+    }
+}
+
+//+ 平板适配
+@media screen and (min-width: 768px) {
+    .user-header {
+        height: 12rem;
+    }
+
+    .bg-image {
+        height: 12rem;
+    }
+
+    .user-info {
+ 
+
+        .nickname-row .nickname {
+            font-size: 1.2rem;
+        }
+
+        .signature {
+            font-size: 0.6rem;
+        }
+    }
+
+    .social-stats {
+        margin-top: 1rem;
+
+        .stat-item {
+            .stat-value {
+                font-size: 1rem;
+                font-weight: 500;
+            }
+
+            .stat-label {
+                font-size: 0.55rem;
+            }
+        }
+    }
+        .menu-item {
+    
+            .menu-icon {
+                width: 1rem;
+                text-align: left;
+                
+                margin-right: 0.1rem;
+            }
+    
+            .menu-text {
+                font-size: 0.5rem;
+                color: #111827;
+                font-weight: 350;
+            }
+    
+            .menu-arrow {
+                font-size: 1.5rem;
+                color: #696767;
+            }
+        }
+}

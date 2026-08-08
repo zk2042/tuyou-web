@@ -1,0 +1,51 @@
+//+ Content 页面样式
+.content-page {
+display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    //+ HeaderNavBar 用 fixed={false}，在文档流中占位，无需 padding-top
+    padding-bottom: 60px; // 底部操作栏高度
+    overflow: hidden;
+}
+
+.content-body {
+    flex: 1;
+    overflow-y: auto;
+  
+
+}
+
+//+ Tab 样式
+ .content-tabs {
+    .nut-tabs-titles{
+        background:#fff;
+       
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+.nut-tabs-titles-item-text{
+    color: #333 !important;
+}
+.nut-tabs-titles-item-active .nut-tabs-titles-item-text{
+    color: #428a46 !important;
+}
+
+}
+
+//+ 瀑布流容器
+.feed-wrapper {
+    padding: 0.5rem;
+}
+
+//+ 平板适配
+@media screen and (min-width: 768px) {
+    .content-body {
+        padding-top: 60px;
+    }
+
+    .feed-wrapper {
+        padding: 0.8rem 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}

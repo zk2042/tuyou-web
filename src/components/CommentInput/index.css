@@ -1,0 +1,167 @@
+.comment-input-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+.comment-input-container .comment-input-cell {
+  width: 100%;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin: 0;
+  border-radius: 0 !important;
+  padding: 0.4rem 0.8rem;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+}
+.comment-input-container .comment-input-cell .nut-input-container {
+  height: 1.7rem;
+  background-color: #f3f4f6;
+  border-radius: 1.7rem;
+  margin-right: 0;
+}
+.comment-input-container .comment-input-cell .nut-input-container .nut-input-native::placeholder {
+  color: #8c929e;
+  font-weight: 320;
+}
+.comment-input-container .comment-input-cell .iconfont {
+  color: #a09e9e;
+  background-color: #fff;
+  margin-left: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.comment-input-container .comment-input-cell .iconfont .like-count {
+  color: #918f8f;
+  font-size: 0.6rem;
+}
+.comment-input-container .comment-input-cell .like-active {
+  color: #2e7d32;
+}
+.comment-input-container .comment-input-cell .favorite-active {
+  color: #ff9800;
+}
+.comment-input-container .nut-popup {
+  min-height: 12%;
+  max-height: 30%;
+  border-radius: 1.2rem 1.2rem 0 0;
+  overflow: hidden;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: 1rem 0.8rem;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap > div:first-child {
+  flex: 1;
+  overflow: visible;
+  margin-right: 1rem;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .form-item {
+  padding: 0;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-textarea-textarea {
+  width: 100%;
+  padding: 0 0 0 0.8rem;
+  color: #070707;
+  font-weight: 320;
+  line-height: 1.5;
+  overflow-y: auto;
+  overflow: auto;
+  max-height: 20vh;
+  caret-color: #000;
+  min-height: 1.5em;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-textarea-textarea::placeholder {
+  color: #bdc3ce;
+  font-weight: 320;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button {
+  border: none;
+  padding: 0;
+  background-color: #c8d6c9;
+  color: #fff;
+  height: 1.75rem;
+  border-radius: 1.7rem;
+  font-weight: 300;
+  transition: background-color 0.2s;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button.btn-active {
+  background-color: #2e7d32;
+}
+.comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button.nut-button-disabled {
+  background-color: #c8d6c9 !important;
+}
+@media screen and (min-width: 768px) {
+  .comment-input-container .comment-input-cell {
+    padding: 0.2rem 0.4rem;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+  }
+  .comment-input-container .comment-input-cell .nut-input-container {
+    height: 1rem;
+    border-radius: 1rem;
+  }
+  .comment-input-container .comment-input-cell .nut-input-container .nut-input-native::placeholder {
+    font-weight: 350;
+  }
+  .comment-input-container .comment-input-cell .iconfont {
+    color: #a09e9e;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+  }
+  .comment-input-container .comment-input-cell .iconfont .like-count {
+    color: #918f8f;
+    font-size: 0.4rem;
+  }
+  .comment-input-container .nut-popup {
+    min-height: 6.5%;
+    max-height: 30%;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap {
+    padding: 0.5rem 0.5rem;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap > div:first-child {
+    flex: 1;
+    overflow: visible;
+    margin-right: 0.5rem;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .form-item {
+    padding: 0;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-textarea-textarea {
+    width: 100%;
+    padding: 0 0 0 0.5rem;
+    color: #070707;
+    font-weight: 320;
+    line-height: 1.5;
+    max-height: 28vh;
+    min-height: 0.5rem;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-textarea-textarea::placeholder {
+    color: #bdc3ce;
+    font-weight: 320;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button {
+    border: none;
+    padding: 0;
+    background-color: #c8d6c9;
+    color: #fff;
+    height: 1rem;
+    border-radius: 1rem;
+    font-weight: 300;
+    transition: background-color 0.2s;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button.btn-active {
+    background-color: #2e7d32;
+  }
+  .comment-input-container .nut-popup .nut-form .nut-cell-group-wrap .nut-button.nut-button-disabled {
+    background-color: #2e7d32 !important;
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,235 @@
+//+ 认证页面公共样式
+
+//+ 全局box-sizing
+* {
+    box-sizing: border-box;
+}
+
+//+ 容器基础样式
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    align-items: center;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+//+ Logo区域样式
+.auth-logo {
+    text-align: center;
+    margin-top: 15vh;
+    flex-shrink: 0;
+
+    img {
+        width: calc(4.5rem*1.2);
+        height: calc(4.8rem*1.25);
+    }
+
+    p {
+        font-size: 0.7rem;
+        letter-spacing: 0.01rem;
+        color: #368848;
+        font-weight: 350;
+        margin-top: 0.2rem;
+    }
+}
+
+//+ 表单区域样式
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    // flex: 1;
+
+    padding-top: 0 5vw;
+    padding-bottom: 0 5vw;
+// overflow-y: auto; 表示当元素内容在垂直方向上超出容器高度时，自动显示垂直滚动条；当内容未超出时，不显示滚动条
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-top: 1.4rem;
+}
+
+
+
+
+//+ 表单项样式
+.auth-form-item {
+   margin-bottom:2.4vh;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+//+ 输入框样式（直接作用于NutUI Input组件）
+.auth-input {
+    width: 100%;
+    height: 6.3vh;
+    background-color: #f5f6f7;
+    border-radius: 0.5rem;
+    border: none;
+
+    font-size: 0.625rem;
+}
+
+//+ NutUI Input内部原生input样式
+.auth-input .nut-input__input,
+.auth-input .nut-input-native {
+
+    width: 100%;
+    height: 5.8vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 0.625rem;
+    padding-left: 0.8rem;
+    &::placeholder {
+        color: #c1c5ca;
+    }
+}
+
+//+ 提交按钮样式
+.auth-submit-btn {
+    width: 100%;
+    height: 6.6vh;
+    border-radius:6.6vh;
+    background-color: #a0c49a;
+    border: none;
+    color: #fff;
+    font-size: 0.85rem;
+    margin-top: 0.4vh;
+    font-weight: 390;
+    flex-shrink: 0;
+}
+
+//+ 底部链接样式
+.auth-link {
+    position: absolute;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: #b2b6bb;
+    font-size: 0.625rem;
+    line-height: 1.25vh;
+    font-weight: 400;
+    flex-shrink: 0;
+
+    a,
+    .auth-link-text {
+        color: rgb(46 125 50 / var(--tw-text-opacity, 1));
+        cursor: pointer;
+    }
+
+    .auth-link-row {
+        margin-top: 0.15rem;
+    }
+}
+
+//+ 验证码表单项：相对定位，容纳绝对定位的发送按钮
+.auth-form-item-code {
+    position: relative;
+}
+//+ 验证码输入框：右侧留出空间避免被发送按钮遮挡
+.auth-form-item-code .auth-input-code {
+    padding-right: 5rem !important;
+}
+
+//+ 发送验证码按钮：绝对定位在输入框右侧
+.send-code-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.6rem;
+    color: #2e7d32;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    z-index: 1;
+
+    &--disabled {
+        color: #c1c5ca;
+        cursor: not-allowed;
+    }
+}
+
+
+//+ 平板和PC端的媒体查询
+@media screen and (min-width: 768px) {
+    //+ 表单区域样式
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 96%;
+            // flex: 1;
+    
+            padding-top: 0 5vw;
+            padding-bottom: 0 5vw;
+            // overflow-y: auto; 表示当元素内容在垂直方向上超出容器高度时，自动显示垂直滚动条；当内容未超出时，不显示滚动条
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin-top: 1.4rem;
+        }
+    
+    
+    
+    
+        //+ 表单项样式
+        .auth-form-item {
+            margin-bottom: 1.6vh;
+            width: 100%;
+            flex-shrink: 0;
+        }
+    
+        //+ 输入框样式（直接作用于NutUI Input组件）
+        .auth-input {
+            width: 100%;
+            height: 5vh;
+            background-color: #f5f6f7;
+            border-radius: 0.4rem;
+            border: none;
+    
+            font-size: 0.625rem;
+        }
+    
+        //+ NutUI Input内部原生input样式
+        .auth-input .nut-input__input,
+        .auth-input .nut-input-native {
+    
+            width: 100%;
+            height: 5vh;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.625rem;
+            padding-left: 0.5rem;
+    
+            &::placeholder {
+                color: #c1c5ca;
+            }
+        }
+    
+        //+ 提交按钮样式
+        .auth-submit-btn {
+            width: 100%;
+            height: 5.5vh;
+            border-radius: 5.5vh;
+            background-color: #a0c49a;
+            border: none;
+            color: #fff;
+            font-size: 0.7rem;
+            margin-top: 0.4vh;
+            font-weight: 390;
+            flex-shrink: 0;
+        }
+                //+ 发送验证码按钮：绝对定位在输入框右侧
+                .send-code-btn {
+        
+                    font-size: 0.5rem;
+        
+                }
+}
+

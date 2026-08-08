@@ -1,0 +1,336 @@
+//+ 活动详情页样式
+.activity-detail-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f6f7;
+  //+ HeaderNavBar 用 fixed={false}，在文档流中占位，无需 padding-top
+  padding-bottom:60px; // 底部操作栏高度
+  overflow: hidden;
+
+
+}
+
+//+ 加载/空状态
+.loading-wrapper,
+.empty-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.7rem;
+}
+
+//+ 可滚动区
+.detail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+ 
+}
+.detail-content {
+  padding: 0.2rem 0.7rem 5rem;
+  background-color: #fff;
+}
+//+ 封面图
+.cover-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+//+ 标签 + 标题
+.title-section {
+  background: #fff;
+  padding: 0.6rem 0;
+  
+  .tag-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.2rem;
+    .nut-tag-plain{
+      padding: 0;
+      border: none;
+      .nut-tag-text-plain {
+          color: #fff;
+          background-color: #2e7d32;
+          padding: 0 0.4rem;
+          border-radius: 0.25rem;
+          height: 1rem;
+          text-align: center;
+          line-height: 1rem;
+          font-size: 0.65rem;
+            font-weight: 700;
+          //+ 状态标签颜色映射
+          // const STATUS_COLOR_MAP: Record<string,
+          // string>= {
+          //   '报名中': '#2e7d32',
+          //     '进行中': '#1976d2',
+          //     '已结束': '#9e9e9e'
+          // }
+        }
+    }
+    
+  }
+
+  .activity-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+    line-height: 1.4;
+  }
+}
+
+//+ 活动信息面板
+.info-panel {
+
+  padding: 0.6rem 0.8rem;
+  background: #f3f4f6;
+  border-radius: 0.6rem;
+
+  .info-item {
+    font-size: 0.7rem;
+    color: #111111;
+    font-weight: 320;
+    line-height: 1.8;
+   
+    padding: 0.22rem 0;
+  }
+}
+
+//+ 通用区域标题
+.section-title {
+  display: block;
+  
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #222;
+}
+
+//+ 发起人
+.leader-section {
+  background: #fff;
+  margin-top: 1rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.18);
+  border-radius: 0.4rem;
+  padding:0.3rem 0;
+  .section-title {
+      padding: 0.6rem 0.8rem 0.4rem;
+    }
+  .leader-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.8rem 0.6rem;
+  }
+
+  .leader-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+
+    .leader-name {
+      font-size: 0.7rem;
+      font-weight: 375;
+      color: #181818;
+    }
+
+    .leader-bio {
+      font-size: 0.6rem;
+      color: #999;
+    }
+  }
+  .nut-button{
+    padding:0;
+    border: none;
+    .nut-button-wrap{
+      color: #fff;
+      font-weight: 350;
+      height: 1.4rem;
+      line-height: 1.4rem;
+      border-radius: 1.4rem;
+      background-color: #2e7d32;
+    }
+  }
+}
+
+//+ 活动介绍
+.intro-section {
+  background: #fff;
+  margin-top: 1.3rem;
+  .section-title {
+   font-weight: 800;
+  }
+  .intro-content {
+    padding: 0.6rem 0 0.8rem;
+  }
+
+  .intro-line {
+    font-size: 0.7rem;
+    color: #444;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+}
+
+//+ 已报名成员
+.members-section {
+  background: #fff;
+  margin-top: 0.4rem;
+  .section-title {
+   font-weight: 800;
+    padding: 0 0 0.8rem;
+  }
+
+  .members-list {
+    display: flex;
+    flex-wrap: wrap;
+   
+    
+  }
+
+  .member-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.2rem;
+  }
+
+  // .member-name {
+  //   font-size: 0.55rem;
+  //   color: #666;
+  //   text-align: center;
+  //   max-width: 3rem;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  //   white-space: nowrap;
+  // }
+}
+
+//+ 底部操作栏
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  z-index: 100;
+
+  //+ 左侧进度（约 70%）
+  .progress-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    .progress-info{
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .progress-text {
+      font-size: 0.6rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 0.3rem;
+      background: #eee;
+      border-radius: 0.15rem;
+      overflow: hidden;
+
+      .progress-inner {
+        height: 100%;
+        background: #2e7d32;
+        transition: width 0.3s;
+      }
+    }
+
+    .progress-percent {
+      font-size: 0.6rem;
+      color: #2e7d32;
+      font-weight: 600;
+    }
+  }
+
+  //+ 右侧按钮（约 30%）
+  .action-btn {
+    flex-shrink: 0;
+    height: 2rem;
+    border-radius: 2rem;
+    padding:0 0.5rem;
+    min-width: 4rem;
+    background: #2e7d32;
+    border: none;
+  }
+}
+ /* 平板 */
+ @media screen and (min-width: 768px){
+
+   /* 针对平板优化 */
+  
+    .title-section .tag-row .nut-tag-plain .nut-tag-text-plain {
+     height: 0.6rem;
+     line-height: 0.6rem;
+     font-size: 0.35rem;
+     font-weight: 400;
+     padding: 0 0.15rem;
+     border-radius: 0.15rem;
+   }
+   .title-section {
+    padding: 0.3rem 0.4rem;
+   }
+   .title-section .tag-row {
+    margin-bottom: 0.1rem;
+   }
+    .title-section .activity-title {
+      font-size: 0.5rem;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.4;
+    }
+  
+    //+ 活动信息面板
+    .info-panel {
+      margin: 0.1rem 0.6rem;
+      padding: 0.6rem 0.8rem;
+      background: #f3f4f6;
+      border-radius: 0.6rem;
+  
+      .info-item {
+        font-size: 0.7rem;
+        color: #111111;
+        font-weight: 320;
+        line-height: 1.8;
+  
+        padding: 0.22rem 0;
+      }
+    }
+     .bottom-bar .action-btn {
+       flex-shrink: 0;
+       height: 1.5rem;
+       border-radius: 1.5rem;
+       padding: 0 0.1rem;
+       min-width: 4rem;
+       background: #2e7d32;
+       border: none;
+     }
+
+ }

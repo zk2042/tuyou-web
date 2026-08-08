@@ -1,0 +1,56 @@
+//+ 我的活动页样式
+//+ 卡片样式复用 components/ActivityCard，本文件只负责页面外壳
+.favorite-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    //+ HeaderNavBar 用 fixed={false}，在文档流中占位，无需 padding-top
+    padding-bottom: 60px; // 底部操作栏高度
+    overflow: hidden;
+}
+
+.my-activity-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+//+ Tab 样式
+.my-activity-tabs {
+    .nut-tabs-titles {
+        background: #fff;
+
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .nut-tabs-titles-item-text {
+        color: #333 !important;
+    }
+
+    .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
+        color: #428a46 !important;
+    }
+
+}
+//+ 活动列表（卡片自带间距，容器只需顶部留白）
+.my-activity-list {
+    padding-top: 0.6rem;
+    padding-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+    padding-top: 30vh;
+}
+
+//+ 平板适配
+@media screen and (min-width: 768px) {
+    .my-activity-list {
+        max-width: 700px;
+        margin: 0 auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}

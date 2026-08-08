@@ -1,0 +1,150 @@
+.nut-tabbar .nut-tabbar-item{
+      color: var(--nutui-tabbar-inactive-color, var(--nutui-color-title, #bfbfbf));
+}
+.nut-tabbar-item-active .nut-tabbar-item-text,
+.nut-tabbar-item-active .nut-icon {
+  color: var(--nutui-tabbar-active-color, var(--nutui-color-primary, #428a46));
+  color: inherit;
+}
+ .nut-tabbar .nut-tabbar-item-text,
+.nut-tabbar-item-active {
+    color: var(--nutui-tabbar-active-color, var(--nutui-color-primary, #428a46));
+        color: var(--nutui-color-text, #bfbfbf);
+}
+.tab-container{
+  //底部
+  .nut-tabbar{
+ 
+
+    .nut-tabbar-item{
+      justify-content: flex-start;
+      .nut-badge{
+        .iconfont{
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 1rem;
+        }
+      }
+      .nut-tabbar-item-text{
+        margin-top: 0.2rem;
+
+      }
+    }
+
+
+        //发布
+        .publish {
+          position: relative;
+          
+    
+          .nut-badge {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            background-color: #428a46;
+            border-radius: 50%;
+            width: 2.2rem;
+            height: 2.2rem;
+
+            box-shadow:
+              0 0 2px 2px rgba(66, 138, 70, 0.3),
+              0 0 4px 4px rgba(66, 138, 70, 0.1);
+    
+            .nut-tabbar-item-text {
+              margin-top: 0;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 1rem;
+              height: 1rem;
+              transform: translate(-50%, -50%);
+              font-weight: 700;
+              text-align: center;
+              font-size: 1.2rem;
+              color: #fff;
+              text-shadow:
+                0 0 2px rgba(255, 255, 255, 0.5),
+                0 0 5px rgba(255, 255, 255, 0.3),
+                0 0 10px rgba(255, 255, 255, 0.1);
+            }
+    
+          }
+        }
+
+  }
+ .nut-popup{
+  border-radius:var(--nutui-popup-border-radius, var(--nutui-radius-xl, calc(30px * var(--nut-scale-f, 1)))) var(--nutui-popup-border-radius, var(--nutui-radius-xl, calc(30px * var(--nut-scale-f, 1)))) 0 0 !important;
+  .action-sheet {
+  
+      // 面板
+      .nut-actionsheet-item-name {
+        font-size: var(--nutui-font-size-base, calc(0.8rem * var(--nut-scale-font, var(--nut-scale-f, 1))));
+        color: var(--nutui-actionsheet-item-color, var(--nutui-color-title, #363636));
+      }
+  
+      // 取消
+      .nut-actionsheet-cancel {
+        border-top: calc(0.4rem * var(--nut-scale-f, 1)) solid var(--nutui-actionsheet-border-color, var(--nutui-color-border, rgba(247, 248, 250, 1)));
+        font-size: var(--nutui-font-size-base, calc(0.8rem * var(--nut-scale-font, var(--nut-scale-f, 1))));
+      }
+    }
+ }
+
+@media screen and (min-width: 768px) {
+  //底部
+    .nut-tabbar {
+      .nut-tabbar-item {
+        .nut-badge {
+          .iconfont {    
+            height: 0.5rem;
+          }
+        }
+        .nut-tabbar-item-text {
+          margin-top: 0.1rem;
+        }
+      }
+      //发布
+      .publish {
+        position: relative;
+        .nut-badge {
+          position: absolute;
+          width: 1.2rem;
+          height: 1.2rem;
+          .nut-tabbar-item-text {
+            width: 0.5rem;
+            height: 0.5rem;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+        .nut-popup {
+          border-radius: var(--nutui-popup-border-radius, var(--nutui-radius-xl, calc(20px * var(--nut-scale-f, 1)))) var(--nutui-popup-border-radius, var(--nutui-radius-xl, calc(20px * var(--nut-scale-f, 1)))) 0 0 !important;
+    
+          .action-sheet {
+    
+            // 面板
+            .nut-actionsheet-item-name {
+              font-size: var(--nutui-font-size-base, calc(0.45rem * var(--nut-scale-font, var(--nut-scale-f, 1))));
+              color: var(--nutui-actionsheet-item-color, var(--nutui-color-title, #363636));
+            }
+    
+            // 取消
+            .nut-actionsheet-cancel {
+              border-top: calc(0.18rem * var(--nut-scale-f, 1)) solid var(--nutui-actionsheet-border-color, var(--nutui-color-border, rgba(247, 248, 250, 1)));
+              font-size: var(--nutui-font-size-base, calc(0.45rem * var(--nut-scale-font, var(--nut-scale-f, 1))));
+            }
+          }
+        }
+}
+
+
+
+
+  //active
+  .nut-tabbar-item-active{
+    color:#428a46;
+  }
+}

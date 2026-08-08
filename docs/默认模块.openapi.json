@@ -1,0 +1,718 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "笔记模块接口文档，包含发布、详情、删除、点赞、收藏",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "前台"
+    },
+    {
+      "name": "前台/前台活动模块"
+    }
+  ],
+  "paths": {
+    "/activities": {
+      "post": {
+        "summary": "前台活动模块创建活动的接口",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "前台/前台活动模块"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "description": "活动标题，最大50字"
+                  },
+                  "activityType": {
+                    "type": "string",
+                    "enum": [
+                      "徒步",
+                      "露营",
+                      "骑行",
+                      "登山",
+                      "跑步",
+                      "攀岩",
+                      "溯溪"
+                    ],
+                    "description": "活动类型"
+                  },
+                  "coverImg": {
+                    "type": "string",
+                    "description": "封面图URL（仅1张）"
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "活动举办地点"
+                  },
+                  "startTime": {
+                    "type": "string",
+                    "description": "开始时间，格式 YYYY-MM-DD HH:mm，必须晚于当前时间"
+                  },
+                  "endTime": {
+                    "type": "string",
+                    "description": "结束时间，格式 YYYY-MM-DD HH:mm"
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "费用，0=免费，必须为正数",
+                    "minimum": 0,
+                    "format": "float64"
+                  },
+                  "maxPeople": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "人数上限"
+                  },
+                  "difficulty": {
+                    "type": "string",
+                    "enum": [
+                      "入门",
+                      "中等",
+                      "中高等",
+                      "高等"
+                    ],
+                    "description": "难度等级"
+                  },
+                  "activityContent": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "description": "活动介绍，最长2000字"
+                  }
+                },
+                "required": [
+                  "title",
+                  "activityType",
+                  "coverImg",
+                  "address",
+                  "startTime",
+                  "endTime",
+                  "price",
+                  "maxPeople",
+                  "difficulty",
+                  "activityContent"
+                ]
+              },
+              "examples": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码，0表示成功"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "新创建的活动ID"
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "资源类型，固定为 activity"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "获取活动列表",
+        "deprecated": false,
+        "description": "获取活动列表，按分类筛选，分页返回。\n\n【可选】category — 活动分类：徒步/露营/骑行/登山/跑步/攀岩/溯溪，不传=全部，传非法值返回2001\n【必填】page     — 页码，从1开始\n【必填】size     — 每页条数，最大100\n\n无幻灯片/Banner；activityStatus 由后端按时间自动计算（报名中/进行中/已结束），signUpEnd = 开始时间-48h；joined 为当前用户是否已报名",
+        "tags": [
+          "前台/前台活动模块"
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "露营",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "10",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "leader": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "nickname": {
+                                    "type": "string"
+                                  },
+                                  "avatar": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "nickname",
+                                  "avatar"
+                                ]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "coverImg": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string"
+                              },
+                              "address": {
+                                "type": "string"
+                              },
+                              "startTime": {
+                                "type": "string"
+                              },
+                              "endTime": {
+                                "type": "string"
+                              },
+                              "signUpEnd": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "integer"
+                              },
+                              "maxPeople": {
+                                "type": "integer"
+                              },
+                              "currentPeople": {
+                                "type": "integer"
+                              },
+                              "difficulty": {
+                                "type": "string"
+                              },
+                              "activityStatus": {
+                                "type": "string"
+                              },
+                              "joined": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "total_page": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "list",
+                        "total",
+                        "page",
+                        "size",
+                        "total_page"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "成功",
+                  "data": {
+                    "list": [
+                      {
+                        "id": "1",
+                        "leader": {
+                          "id": "1",
+                          "nickname": "登山领队小王",
+                          "avatar": "https://cdn.example.com/avatar/default.jpg"
+                        },
+                        "title": "武功山云海露营",
+                        "coverImg": "https://example.com/cover.jpg",
+                        "category": "露营",
+                        "address": "萍乡市武功山风景区",
+                        "startTime": "2026-08-15 07:00:00",
+                        "endTime": "2026-08-17 17:00:00",
+                        "signUpEnd": "2026-08-13 07:00:00",
+                        "price": 198,
+                        "maxPeople": 20,
+                        "currentPeople": 8,
+                        "difficulty": "中等",
+                        "activityStatus": "报名中",
+                        "joined": false
+                      }
+                    ],
+                    "total": 3,
+                    "page": 1,
+                    "size": 10,
+                    "total_page": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/activities/{id}": {
+      "get": {
+        "summary": "活动模块获取活动详情的接口实现",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "前台/前台活动模块"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              },
+              "examples": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码，0表示成功"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "活动ID，来源: base.id"
+                        },
+                        "leader": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "领队ID"
+                            },
+                            "nickname": {
+                              "type": "string",
+                              "description": "领队昵称"
+                            },
+                            "avatar": {
+                              "type": "string",
+                              "description": "领队头像URL"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "nickname",
+                            "avatar"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "活动标题，来源: title"
+                        },
+                        "coverImg": {
+                          "type": "string",
+                          "description": "封面图URL，来源: cover_img"
+                        },
+                        "activityType": {
+                          "type": "string",
+                          "enum": [
+                            "徒步",
+                            "露营",
+                            "骑行",
+                            "登山",
+                            "跑步",
+                            "攀岩",
+                            "溯溪"
+                          ],
+                          "description": "活动类型，来源: activity_type"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "活动地点"
+                        },
+                        "activityContent": {
+                          "type": "string",
+                          "description": "活动详情正文，来源: activity_content"
+                        },
+                        "startTime": {
+                          "type": "string",
+                          "description": "开始时间，来源: start_time"
+                        },
+                        "endTime": {
+                          "type": "string",
+                          "description": "结束时间，来源: end_time"
+                        },
+                        "signUpStart": {
+                          "type": "string",
+                          "description": "报名开始时间（后端自动计算=创建时间），格式 YYYY-MM-DD HH:mm:ss"
+                        },
+                        "signUpEnd": {
+                          "type": "string",
+                          "description": "报名截止时间（后端自动计算=开始时间-48h），格式 YYYY-MM-DD HH:mm:ss"
+                        },
+                        "maxPeople": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "人数上限，来源: max_people"
+                        },
+                        "currentPeople": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "当前报名人数，来源: current_people"
+                        },
+                        "price": {
+                          "type": "number",
+                          "minimum": 0,
+                          "description": "费用，0=免费，来源: price"
+                        },
+                        "difficulty": {
+                          "type": "string",
+                          "enum": [
+                            "入门",
+                            "中等",
+                            "中高等",
+                            "高等"
+                          ],
+                          "description": "难度等级，来源: difficulty"
+                        },
+                        "joined": {
+                          "type": "boolean",
+                          "description": "当前用户是否已报名"
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "成员ID"
+                              },
+                              "nickname": {
+                                "type": "string",
+                                "description": "成员昵称"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "description": "成员头像URL"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "nickname",
+                              "avatar"
+                            ]
+                          },
+                          "description": "已报名成员列表（含领队）"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "leader",
+                        "title",
+                        "coverImg",
+                        "activityType",
+                        "address",
+                        "activityContent",
+                        "startTime",
+                        "endTime",
+                        "signUpStart",
+                        "signUpEnd",
+                        "maxPeople",
+                        "currentPeople",
+                        "price",
+                        "difficulty",
+                        "joined",
+                        "members"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "前台领队删除活动的接口",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "前台/前台活动模块"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              },
+              "examples": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码，0表示成功"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "删除操作无业务数据返回",
+                      "properties": {}
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/activities/{id}/signup": {
+      "post": {
+        "summary": "用户报名活动/取消报名活动接口",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "前台/前台活动模块"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码，0表示成功"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "isJoined": {
+                          "type": "boolean",
+                          "description": "报名操作后的状态，true已报名/false未报名"
+                        },
+                        "currentPeople": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "操作后的最新报名人数"
+                        }
+                      },
+                      "required": [
+                        "isJoined",
+                        "currentPeople"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [],
+  "security": []
+}

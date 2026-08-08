@@ -1,0 +1,98 @@
+.banner-container {
+  width: 100%;
+  height: 100%;
+}
+.banner-container .nut-swiper-item {
+  border-radius: 0.8rem;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+.banner-container .nut-swiper-item img {
+  height: 100%;
+  border-radius: 0.8rem;
+  object-fit: contain;
+  width: 100%;
+}
+.banner-container .banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  border-radius: 0.8rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+  pointer-events: none;
+}
+.banner-container .banner-indicator {
+  position: absolute;
+  bottom: 0rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+.banner-container .banner-indicator .nut-indicator-dot {
+  border-radius: 50%;
+  background-color: #e8f0df7e;
+}
+.banner-container .banner-indicator .nut-indicator-dot-active {
+  background-color: #60b464b4;
+}
+.banner-container .banner-info {
+  position: absolute;
+  width: 100%;
+  bottom: 0.5rem;
+  left: 0;
+  padding-left: 0.35rem;
+}
+.banner-container .banner-info .top-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.banner-container .banner-info .top-info .banner-title {
+  margin-left: 0.3rem;
+  font-size: 0.75rem;
+  color: #fff;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.banner-container .banner-info .top-info .banner-title::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 1rem;
+  background: linear-gradient(to right, transparent, #00000062);
+}
+.banner-container .banner-info .bottom-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 0.2rem;
+}
+.banner-container .banner-info .bottom-info .banner-signup {
+  margin-left: 0.3rem;
+  font-size: 0.55rem;
+  color: #cecaca;
+}
+.banner-container .banner-info .bottom-info .banner-people {
+  margin-left: 0.3rem;
+  font-size: 0.55rem;
+  color: #cecaca;
+}
+.banner-container .banner-info .placeholder-box {
+  visibility: hidden;
+}

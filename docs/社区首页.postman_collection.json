@@ -1,0 +1,349 @@
+{
+  "info": {
+    "name": "途友-社区首页",
+    "_postman_id": "tuyou-community-home-001",
+    "description": "途友社区首页模块接口集合\n\nBase URL: http://192.168.10.7:84/api/v1\n\n统一响应格式: { code: number, message: string, data: T }\n- code=0 或 code=200 表示成功\n- 认证方式: Authorization: Bearer <JWT>",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://192.168.10.7:84/api/v1",
+      "description": "API基础地址"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "登录后获取的JWT token"
+    },
+    {
+      "key": "noteId",
+      "value": "1",
+      "description": "笔记ID（用于详情/点赞/收藏/评论接口）"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. 获取首页轮播",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/slides",
+          "host": ["{{baseUrl}}"],
+          "path": ["slides"]
+        },
+        "description": "获取首页轮播图列表\n\n从笔记、攻略、活动三张表中查询 is_slide=1 的内容，前端按 type 字段区分跳转目标。\n\n响应 data 字段:\n- id: 内容ID\n- type: 内容类型 ('note' | 'guide' | 'activity')\n- title: 标题\n- cover: 封面图URL\n- tag: 标签（如'登山'、'自驾'）\n- signUpStart: 报名开始时间（仅activity类型）\n- currentPeople: 当前报名人数（仅activity类型）\n- maxPeople: 最大人数（仅activity类型）"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/slides",
+              "host": ["{{baseUrl}}"],
+              "path": ["slides"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": [\n    {\n      \"id\": \"1\",\n      \"type\": \"note\",\n      \"title\": \"四姑娘山大峰登顶记：三天两夜的雪山之旅\",\n      \"cover\": \"https://picsum.photos/seed/slide1/800/450\",\n      \"tag\": \"登山\"\n    },\n    {\n      \"id\": \"2\",\n      \"type\": \"guide\",\n      \"title\": \"川藏线自驾终极攻略：318国道15天全记录\",\n      \"cover\": \"https://picsum.photos/seed/slide2/800/450\",\n      \"tag\": \"自驾\"\n    },\n    {\n      \"id\": \"3\",\n      \"type\": \"activity\",\n      \"title\": \"武功山云海露营 · 周末两日\",\n      \"cover\": \"https://picsum.photos/seed/slide3/800/450\",\n      \"tag\": \"露营\",\n      \"signUpStart\": \"2026-04-20 00:00\",\n      \"currentPeople\": 5,\n      \"maxPeople\": 20\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. 获取Feed流列表",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/feed?category=1&sort=推荐&page=1&size=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["feed"],
+          "query": [
+            {
+              "key": "category",
+              "value": "1",
+              "description": "分类ID：1=徒步 2=露营 3=骑行 4=登山 5=跑步 6=攀岩 7=溯溪。不传=全部"
+            },
+            {
+              "key": "sort",
+              "value": "推荐",
+              "description": "排序方式：推荐 | 最新 | 最热"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "页码，从1开始"
+            },
+            {
+              "key": "size",
+              "value": "10",
+              "description": "每页条数"
+            }
+          ]
+        },
+        "description": "获取社区首页Feed流（笔记/攻略混合瀑布流）\n\n响应 data 字段（分页结构）:\n- list: 当前页数据数组\n- total: 总条数\n- page: 当前页码\n- size: 每页条数\n\nlist 中每项字段:\n- id: 内容ID\n- title: 标题\n- images: 图片URL数组（视频内容为空数组）\n- videoUrl: 视频URL（图片内容为null）\n- tags: 标签数组\n- member: { nickname, avatar }\n- likeCount: 点赞数\n- isLiked: 当前用户是否已点赞\n- type: 'note' | 'guide'\n- category: 分类ID（数字）"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/feed?category=1&sort=推荐&page=1&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["feed"],
+              "query": [
+                { "key": "category", "value": "1" },
+                { "key": "sort", "value": "推荐" },
+                { "key": "page", "value": "1" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"list\": [\n      {\n        \"id\": \"1\",\n        \"title\": \"周末徒步记42\",\n        \"images\": [\n          \"https://picsum.photos/seed/feed-1-img0/300/400\",\n          \"https://picsum.photos/seed/feed-1-img1/300/400\"\n        ],\n        \"videoUrl\": null,\n        \"tags\": [\"徒步\", \"分享\"],\n        \"member\": {\n          \"nickname\": \"山林旅人\",\n          \"avatar\": \"https://picsum.photos/seed/avatar-1/100/100\"\n        },\n        \"likeCount\": 128,\n        \"isLiked\": false,\n        \"type\": \"note\",\n        \"category\": 1\n      },\n      {\n        \"id\": \"2\",\n        \"title\": \"露营装备分享88\",\n        \"images\": [],\n        \"videoUrl\": \"https://picsum.photos/seed/feed-2-video/400/225\",\n        \"tags\": [\"露营\", \"攻略\"],\n        \"member\": {\n          \"nickname\": \"露营达人\",\n          \"avatar\": \"https://picsum.photos/seed/avatar-2/100/100\"\n        },\n        \"likeCount\": 256,\n        \"isLiked\": true,\n        \"type\": \"guide\",\n        \"category\": 2\n      }\n    ],\n    \"total\": 55,\n    \"page\": 1,\n    \"size\": 10\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "3. 获取笔记/攻略详情",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}?type=note",
+          "host": ["{{baseUrl}}"],
+          "path": ["notes", "{{noteId}}"],
+          "query": [
+            {
+              "key": "type",
+              "value": "note",
+              "description": "内容类型：note=笔记 guide=攻略"
+            }
+          ]
+        },
+        "description": "获取笔记或攻略详情（从首页瀑布流点击进入）\n\n响应 data 字段:\n- id: 内容ID\n- title: 标题\n- content: 正文内容\n- images: 图片URL数组\n- videoUrl: 视频URL\n- tags: 标签数组\n- category: 分类ID（数字）\n- type: 'note' | 'guide'\n- member: { id, nickname, avatar, bio }\n- likeCount: 点赞数\n- isLiked: 是否已点赞\n- isFavorite: 是否已收藏\n- isFollowed: 是否已关注作者\n- commentCount: 评论数\n- createdAt: 发布时间"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notes/{{noteId}}?type=note",
+              "host": ["{{baseUrl}}"],
+              "path": ["notes", "{{noteId}}"],
+              "query": [
+                { "key": "type", "value": "note" }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"id\": \"1\",\n    \"title\": \"周末徒步记42\",\n    \"content\": \"今天天气不错，约了几个朋友一起去徒步...\",\n    \"images\": [\n      \"https://picsum.photos/seed/feed-1-img0/800/600\",\n      \"https://picsum.photos/seed/feed-1-img1/800/600\"\n    ],\n    \"videoUrl\": null,\n    \"tags\": [\"徒步\", \"分享\"],\n    \"category\": 1,\n    \"type\": \"note\",\n    \"member\": {\n      \"id\": \"u001\",\n      \"nickname\": \"山林旅人\",\n      \"avatar\": \"https://picsum.photos/seed/avatar-1/100/100\",\n      \"bio\": \"热爱自然，结伴前行\"\n    },\n    \"likeCount\": 128,\n    \"isLiked\": false,\n    \"isFavorite\": false,\n    \"isFollowed\": false,\n    \"commentCount\": 12,\n    \"createdAt\": \"2026-07-28 10:30:00\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "4. 点赞/取消点赞",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}/like",
+          "host": ["{{baseUrl}}"],
+          "path": ["notes", "{{noteId}}", "like"]
+        },
+        "description": "点赞或取消点赞（toggle切换）\n\n无需请求体，后端根据当前用户与该笔记的点赞状态自动切换。\n\n响应 data 字段:\n- isLiked: 操作后的点赞状态（true=已点赞 false=已取消）\n- likeCount: 操作后的点赞总数"
+      },
+      "response": [
+        {
+          "name": "点赞成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notes/{{noteId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["notes", "{{noteId}}", "like"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"isLiked\": true,\n    \"likeCount\": 129\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "5. 收藏/取消收藏",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}/favorite",
+          "host": ["{{baseUrl}}"],
+          "path": ["notes", "{{noteId}}", "favorite"]
+        },
+        "description": "收藏或取消收藏（toggle切换）\n\n无需请求体，后端根据当前用户与该笔记的收藏状态自动切换。\n\n响应 data 字段:\n- isFavorite: 操作后的收藏状态（true=已收藏 false=已取消）"
+      },
+      "response": [
+        {
+          "name": "收藏成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notes/{{noteId}}/favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["notes", "{{noteId}}", "favorite"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"isFavorite\": true\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "6. 获取评论列表",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}/comments?page=1&size=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["notes", "{{noteId}}", "comments"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "页码，从1开始"
+            },
+            {
+              "key": "size",
+              "value": "20",
+              "description": "每页条数"
+            }
+          ]
+        },
+        "description": "获取笔记/攻略的评论列表\n\n响应 data 字段（分页结构）:\n- list: 评论数组\n- total: 评论总数\n\nlist 中每项字段:\n- id: 评论ID\n- content: 评论内容\n- user: { id, nickname, avatar }\n- likeCount: 评论点赞数\n- isLiked: 是否已点赞该评论\n- createdAt: 评论时间"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notes/{{noteId}}/comments?page=1&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["notes", "{{noteId}}", "comments"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"list\": [\n      {\n        \"id\": \"c001\",\n        \"content\": \"风景太美了，求路线分享！\",\n        \"user\": {\n          \"id\": \"u002\",\n          \"nickname\": \"露营达人\",\n          \"avatar\": \"https://picsum.photos/seed/avatar-2/100/100\"\n        },\n        \"likeCount\": 8,\n        \"isLiked\": false,\n        \"createdAt\": \"2026-07-28 12:00:00\"\n      },\n      {\n        \"id\": \"c002\",\n        \"content\": \"装备清单能详细说说吗？\",\n        \"user\": {\n          \"id\": \"u003\",\n          \"nickname\": \"骑行发烧友\",\n          \"avatar\": \"https://picsum.photos/seed/avatar-3/100/100\"\n        },\n        \"likeCount\": 3,\n        \"isLiked\": true,\n        \"createdAt\": \"2026-07-28 13:30:00\"\n      }\n    ],\n    \"total\": 12,\n    \"page\": 1,\n    \"size\": 20\n  }\n}"
+        }
+      ]
+    }
+  ]
+}

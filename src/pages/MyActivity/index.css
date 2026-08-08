@@ -1,0 +1,39 @@
+.favorite-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-bottom: 60px;
+  overflow: hidden;
+}
+.my-activity-body {
+  flex: 1;
+  overflow-y: auto;
+}
+.my-activity-tabs .nut-tabs-titles {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.my-activity-tabs .nut-tabs-titles-item-text {
+  color: #333 !important;
+}
+.my-activity-tabs .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
+  color: #428a46 !important;
+}
+.my-activity-list {
+  padding-top: 0.6rem;
+  padding-bottom: 1rem;
+}
+.empty-state {
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  padding-top: 30vh;
+}
+@media screen and (min-width: 768px) {
+  .my-activity-list {
+    max-width: 700px;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

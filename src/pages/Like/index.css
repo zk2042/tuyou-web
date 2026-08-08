@@ -1,0 +1,21 @@
+.like-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f6f8;
+  overflow: hidden;
+}
+.like-body {
+  flex: 1;
+  overflow-y: auto;
+}
+.like-tabs .nut-tabs-titles {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.like-tabs .nut-tabs-titles-item-text {
+  color: #333 !important;
+}
+.like-tabs .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
+  color: #428a46 !important;
+}

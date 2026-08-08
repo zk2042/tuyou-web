@@ -1,0 +1,134 @@
+//+ 活动列表页样式（简单布局，后续可调）
+.activity-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f6f7;
+  overflow: hidden;
+}
+
+//+ 顶部导航（固定在顶部）
+.activity-header {
+ 
+  flex-shrink: 0;
+  background-color: #fff;
+}
+
+//+ 可滚动内容区（顶部留出 header 高度）
+.activity-content {
+  flex: 1;
+  overflow-y: auto;
+
+  //+ 留出底部 TabBar 高度
+  padding-bottom: 3rem;
+}
+
+//+ 分类筛选栏：吸顶固定
+.category-bar {
+  position: sticky;
+  //+ 吸顶时距离顶部的距离 = header 高度（约 50px，约 6vh）
+  top: 0;
+  z-index: 100;
+  display: flex;
+  gap: 0.5rem;
+  background-color: #fff;
+  padding: 0.5rem 0.75rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #f0f0f0;
+  -webkit-overflow-scrolling: touch;
+
+  //+ 隐藏滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-item {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    cursor: pointer;
+
+    .category-icon {
+      width: 2.3rem;
+      height: 2.3rem;
+      border-radius: 50%;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .category-name {
+      font-size: 0.6rem;
+      color: #666;
+    }
+
+    //+ 选中态：文字高亮
+    &.active {
+      .category-name {
+        color: #2e7d32;
+        font-weight: 380;
+      }
+      .category-icon {
+        background: #2e7d32;
+      }
+    }
+  }
+}
+
+//+ 活动列表
+.activity-list {
+  padding-top: 0.5rem;
+}
+
+//+ 加载中
+.activity-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0;
+}
+
+//+ 没有更多
+.activity-no-more {
+  text-align: center;
+  font-size: 0.5rem;
+  color: #ccc;
+  padding: 1rem 0;
+}
+@media screen and (min-width: 768px) {
+  //+ 分类筛选栏：吸顶固定
+    .category-bar {
+
+      gap: 0.5rem;
+     
+      padding: 0.5rem 0.5rem;
+  
+      border-bottom: 1px solid #f0f0f0;
+      -webkit-overflow-scrolling: touch;
+  
+      .category-item {
+
+        gap: 0.15rem;
+
+  
+        .category-icon {
+          width: 1.3rem;
+          height: 1.3rem;
+          border-radius: 50%;
+          background: #f3f4f6;
+       
+          font-size: 0.5rem;
+        }
+  
+        .category-name {
+          font-size: 0.4rem;
+     
+        }
+  
+      }
+    }
+}

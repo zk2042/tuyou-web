@@ -1,0 +1,46 @@
+.search-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1vh 3vw;
+  width: 100%;
+  background-color: #fff;
+}
+.search-bar-left {
+  margin-bottom: 0;
+  max-width: 12%;
+  padding: 0;
+  background-color: transparent;
+  font-size: var(--nutui-cell-title-font-size, var(--nutui-font-size-base, calc(40px * var(--nut-scale-font, var(--nut-scale-f, 1)))));
+  font-weight: 700;
+  color: #2e7d32;
+  font-style: italic;
+  flex-shrink: 0;
+}
+.search-bar-input {
+  flex: 1;
+  margin: 0 3vw;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+}
+.search-bar-input .nut-searchbar-content {
+  border: none;
+  background-color: #f3f4f6;
+}
+.search-bar-input .nut-searchbar-content .nut-searchbar-icon {
+  color: #bfbfbf;
+  font-weight: 700;
+}
+.search-bar-input .nut-searchbar-content .nut-searchbar-icon .nut-icon {
+  width: var(--nutui-searchbar-icon-size, calc(30px * var(--nut-scale-f, 1)));
+  height: var(--nutui-searchbar-icon-size, calc(30px * var(--nut-scale-f, 1)));
+  font-size: var(--nutui-searchbar-icon-size, calc(30px * var(--nut-scale-f, 1)));
+}
+.search-bar-input .nut-searchbar-content .nut-searchbar-input {
+  font-size: var(--nutui-searchbar-font-size, var(--nutui-font-size-base, calc(30px * var(--nut-scale-font, var(--nut-scale-f, 1)))));
+  color: var(--nutui-searchbar-input-text-color, var(--nutui-color-title, #bfbfbf));
+  font-weight: 220;
+}

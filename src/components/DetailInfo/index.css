@@ -1,0 +1,102 @@
+.detail-info {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+}
+.detail-info .info-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.detail-info .info-header {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.detail-info .info-header .info-header-left {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.detail-info .info-header .info-header-left .info-header-left-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  margin-left: 0.5rem;
+}
+.detail-info .info-header .info-header-left .info-header-left-content .nickname {
+  font-size: 0.6rem;
+}
+.detail-info .info-header .info-header-left .info-header-left-content .publish-time {
+  font-size: 0.45rem;
+  letter-spacing: 0.02rem;
+  color: #9b9a9a;
+  font-weight: 500;
+}
+.detail-info .info-content {
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  font-weight: 350;
+  color: #444444;
+}
+.detail-info .info-tags {
+  margin-top: 0.5rem;
+}
+.detail-info .info-tags .tag {
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  display: inline-block;
+  padding: 0 0.5rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 1.5rem;
+  background-color: #eff1f5;
+  color: #479c4b;
+  font-weight: 350;
+  font-size: 0.7rem;
+}
+.detail-info .info-tags .tag .tag-icon {
+  font-weight: 450;
+}
+@media screen and (min-width: 768px) {
+  .detail-info {
+    padding: 0.6rem 0.4rem;
+  }
+  .detail-info .info-title {
+    font-size: 0.55rem;
+  }
+  .detail-info .info-header {
+    margin-top: 0.4rem;
+  }
+  .detail-info .info-header .info-header-left .info-header-left-content {
+    margin-left: 0.35rem;
+  }
+  .detail-info .info-header .info-header-left .info-header-left-content .nickname {
+    font-size: 0.35rem;
+  }
+  .detail-info .info-header .info-header-left .info-header-left-content .publish-time {
+    font-size: 0.3rem;
+    letter-spacing: 0.01rem;
+  }
+  .detail-info .info-content {
+    margin-top: 0.4rem;
+    font-size: 0.4rem;
+    font-weight: 400;
+    color: #686767;
+  }
+  .detail-info .info-tags {
+    margin-top: 0;
+  }
+  .detail-info .info-tags .tag {
+    margin-top: 0;
+    margin-right: 0.3rem;
+    padding: 0 0.3rem;
+    height: 0.8rem;
+    line-height: 0.8rem;
+    border-radius: 0.8rem;
+    font-size: 0.4rem;
+  }
+}

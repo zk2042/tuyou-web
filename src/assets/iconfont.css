@@ -1,0 +1,106 @@
+@font-face {
+  font-family: "iconfont";
+  /* Project id 5217220 */
+  src:
+    url('./iconfont.woff2') format('woff2'),
+    url('./iconfont.woff') format('woff'),
+    url('./iconfont.ttf') format('truetype'),
+    url('./iconfont.svg') format('svg');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 48px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-message:before {
+  content: "\e67a";
+  font-size: 40px;
+  line-height: 0.5rem;
+}
+
+.icon-wode:before {
+  content: "\e8a0";
+}
+
+.icon-activity:before {
+  content: "\e852";
+}
+
+.icon-community:before {
+  content: "\e609";
+}
+/* 评论图标 */
+.icon-like:before {
+  content: "\e634";
+}
+
+.icon-shoucang:before {
+  content: "\e639";
+
+}
+.icon-likefill:before {
+  content: "\e64e";
+}
+
+.icon-shoucangfill:before {
+  content: "\e6c9";
+}
+.icon-zhuanfa:before {
+  content: "\e63d";
+  font-size: 36px;
+  padding-bottom: 0.2rem;
+
+}
+
+/* 活动列表字符图标 */
+.icon-weizhi:before {
+  content: "\e60f";
+}
+
+.icon-shijian:before {
+  content: "\e635";
+}
+/* 发布活动图表 */
+.icon-xiangji:before {
+  content: "\e61a";
+  font-size: 37px;
+  color:#dcdee0;
+}
+/* 设置 */
+.icon-shezhi:before {
+  content: "\e626";
+}
+
+.icon-neirong:before {
+  content: "\e64f";
+  font-size: 36px;
+
+}
+
+.icon-bianji:before {
+  content: "\e647";
+}
+@media screen and (min-width: 768px) {
+  .iconfont {
+    font-size: 24px;
+  }
+    .icon-message:before {
+      font-size: 20px;
+      line-height: 0.5rem;
+    }
+    .icon-zhuanfa:before {
+      font-size: 24px;
+      padding-bottom: 0.1rem;
+    }
+    .icon-neirong:before {
+      font-size: 20px;
+    }
+    .icon-shezhi:before {
+      font-size: 20px;
+    }
+
+}

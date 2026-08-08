@@ -1,0 +1,182 @@
+//+ Favorite / Like 通用瀑布流样式（参考 Content 页 + NoteList）
+.favorite-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    //+ HeaderNavBar 用 fixed={false}，在文档流中占位，无需 padding-top
+    padding-bottom: 60px; // 底部操作栏高度
+    overflow: hidden;
+}
+
+.favorite-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+//+ Tab 样式
+.favorite-tabs {
+    .nut-tabs-titles {
+        background: #fff;
+
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .nut-tabs-titles-item-text {
+        color: #333 !important;
+    }
+
+    .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
+        color: #428a46 !important;
+    }
+
+}
+
+
+
+//+ 瀑布流两列
+.fav-waterfall,
+.like-waterfall {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.fav-column,
+.like-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+//+ 单张卡片（左图右文样式？不，参考 NoteList：上图下文）
+.fav-item,
+.like-item {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:active {
+        background-color: #fafafa;
+    }
+}
+
+.fav-cover,
+.like-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .fav-tag,
+    .like-tag {
+        position: absolute;
+        top: 0.4rem;
+        left: 0.4rem;
+        background: rgba(76, 175, 80, 0.9);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.8rem;
+    }
+}
+
+.fav-info,
+.like-info {
+    padding: 0.5rem 0.5rem 0.6rem;
+}
+
+.fav-title,
+.like-title {
+    font-size: 0.8rem;
+    color: #333;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.fav-meta,
+.like-meta {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+
+    .fav-avatar,
+    .like-avatar {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        margin-right: 0.3rem;
+    }
+
+    .fav-name,
+    .like-name {
+        flex: 1;
+        font-size: 0.65rem;
+        color: #999;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .fav-like,
+    .like-like {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+
+        .fav-icon,
+        .like-icon {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .fav-icon-fill {
+            font-size: 0.8rem;
+            color: #faad14; //+ 收藏色：黄色
+        }
+
+        .like-icon {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .like-icon-fill {
+            font-size: 0.8rem;
+            color: #ff4d4f; //+ 点赞色：红色
+        }
+    }
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+    padding-top: 30vh;
+    width: 100%;
+}
+
+//+ 平板适配
+@media screen and (min-width: 768px) {
+
+    .favorite-body,
+    .like-body {
+        padding-top: 60px;
+    }
+
+    .fav-waterfall,
+    .like-waterfall {
+       
+        margin: 0 auto;
+        padding: 0.8rem 2rem;
+    }
+}

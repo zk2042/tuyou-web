@@ -1,0 +1,215 @@
+//+ Feed列表组件样式
+.note-list-container {
+  width: 100%;
+}
+
+//+ 瀑布流容器
+.waterfall-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.5rem 0.65rem;
+}
+
+//+ 瀑布流列
+.waterfall-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+//+ Feed卡片项
+.feed-item {
+  position: relative;
+  background-color: #fff;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  //+ 封面图容器（用于定位Tag标签和播放图标）
+  .feed-cover {
+    position: relative;
+    width: 100%;
+background-color: pink;
+    //+ 图片封面：3:4比例
+    .cover-image {
+      display: block;
+      width: 100%;
+      object-fit:cover;
+      aspect-ratio: 3/4;
+    }
+
+    //+ 视频封面：16:9比例
+    .cover-video {
+      width: 100%;
+      object-fit: cover;
+      aspect-ratio: 16/9;
+      display: block;
+    }
+
+    //+ 左上角Tag标签容器
+    .feed-tag-wrapper {
+      position: absolute;
+      top: 0.4rem;
+      left: 0.3rem;
+      z-index: 2;
+    }
+
+    //+ 右上角收藏图标容器
+    .feed-favorite-wrapper {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.3rem;
+      width: 1.4rem;
+      height: 1.4rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.25);
+      z-index: 2;
+
+      .feed-fav-fill {
+        color: #ff6b6b;
+        font-size: 0.8rem;
+      }
+      .feed-fav-empty {
+        color: #fff;
+        font-size: 0.8rem;
+      }
+    }
+
+    //+ 视频播放图标（居中）
+    .feed-play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      span {
+        color: #fff;
+        font-size: 0.5rem;
+        margin-left: 0.04rem;
+      }
+    }
+  }
+
+  //+ Feed信息
+  .feed-info {
+    padding: 0.6rem 0.8rem;
+    flex: 1;
+    .feed-title {
+      font-size: 0.75rem;
+      color: #1a1919;
+      font-weight: 350;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      margin-bottom: 0.4rem;
+    }
+
+    .feed-meta {
+      display: flex;
+      align-items: center;
+    }
+
+    //+ 用户头像
+    .user-avatar {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    //+ 用户昵称
+    .user-name {
+      flex: 1;
+      font-size: 0.65rem;
+      color: #858484;
+      font-weight: 350;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 0.5rem;
+    }
+
+    //+ 点赞数 / 收藏图标（底部右侧操作区）
+    .feed-likes {
+      font-size: 0.6rem;
+      color: #bfbfbf;
+      flex-shrink: 0;
+      margin-left: 0.2rem;
+
+      //+ 操作图标默认色
+      .like-icon {
+        color: #38833c;
+      }
+
+      //+ 已收藏状态（actionType=favorite）：金色星
+      &.is-faved .like-icon {
+        color: #f5a623;
+      }
+    }
+  }
+}
+
+//+ 加载中
+.note-list-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+//+ 空状态
+.note-list-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: #999;
+
+  p {
+    font-size: 0.28rem;
+  }
+}
+
+//+ 加载更多
+.note-list-load-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem;
+  color: #666;
+  font-size: 0.28rem;
+  cursor: pointer;
+
+  &:active {
+    color: #60b464;
+  }
+}
+
+//+ 没有更多
+.note-list-no-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem;
+  color: #ccc;
+  font-size: 0.24rem;
+}
