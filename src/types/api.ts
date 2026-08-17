@@ -24,12 +24,15 @@ export function getCategoryName(categoryId?: number): string {
 
 //+ 分页响应数据结构（通用）
 //+ total_page 可选：真实后端只返回 total+size，需前端自行计算；Mock 会返回 total_page
+//+ totalComments 可选：评论列表专用，含二级回复的评论总数（区别于 total=一级评论数）
 export interface PageResult<T> {
   list: T[]
   total: number
   page: number
   size: number
   total_page?: number
+  //+ 评论列表专用：含二级回复的评论总数（后端返回，用于评论区标题展示真实总数）
+  totalComments?: number
 }
 
 //+ 活动列表分页响应 data 结构（调用方 import ActivityListResult from '@/types' 时保持一致）
@@ -136,6 +139,29 @@ export interface MessageSenderDTO {
   avatar: string
 }
 
+//+ 消息回复 DTO（互动消息 comment.replies 数组项，后端字段）
+export interface MessageReplyDTO {
+  commentId: string
+  //+ 'me'=我发出的回复，'you'=对方发给我的
+  sender: 'me' | 'you'
+  content: string
+  sendTime?: string
+  likeCount?: number
+  isLiked?: boolean
+  replies?: MessageReplyDTO[] | null
+}
+
+//+ 消息评论 DTO（互动消息 comment 字段，后端字段）
+export interface MessageCommentDTO {
+  commentId: string
+  sender: 'me' | 'you'
+  content: string
+  sendTime?: string
+  likeCount?: number
+  isLiked?: boolean
+  replies?: MessageReplyDTO[] | null
+}
+
 //+ 消息 DTO（对齐 GET /messages/interactions 和 GET /messages/system 响应项）
 //+ 互动消息和系统消息共用此结构，通过 msgType 区分
 //+ msgType: 1=互动消息（点赞/收藏/关注/评论），2=系统通知
@@ -146,6 +172,8 @@ export interface MessageDTO {
   sendTime: string
   isRead: number
   sender: MessageSenderDTO | null
+  //+ 评论类互动消息携带的评论+回复数据（其他类型为 null）
+  comment?: MessageCommentDTO | null
 }
 
 //+ 消息列表分页响应（data 结构）

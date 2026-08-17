@@ -2,7 +2,7 @@
 //+ 布局：头像左侧 → 内容右侧（昵称+图标 / 内容 / [回复列表框] / [回复输入框] / 时间+回复+查看回复）
 //+ 删除：外层 SwipeAction 包裹，左滑露出红色删除按钮
 //+ 注意：评论消息的回复删除逻辑不在此组件中（由 CommentSection 独立处理）
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { IconFont } from '@nutui/icons-react'
 import { Ellipsis } from '@nutui/nutui-react'
 import '@/assets/iconfont.css'
@@ -26,6 +26,12 @@ const CommentMessageItem = ({ item, onMarkRead, onReply, onDelete, swipeOpen, on
   const [replyListVisible, setReplyListVisible] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [localReplies, setLocalReplies] = useState(item.replies || [])
+
+  //+ item.replies 变化时（刷新拉到新数据 / store 更新）同步到 localReplies
+  //+ useState 只在首次挂载初始化，后续需 useEffect 同步外部更新
+  useEffect(() => {
+    setLocalReplies(item.replies || [])
+  }, [item.replies])
 
   const mayOverflow = item.content.length > 40
   const replyCount = localReplies.length
@@ -60,7 +66,7 @@ const CommentMessageItem = ({ item, onMarkRead, onReply, onDelete, swipeOpen, on
     const text = replyText.trim()
     if (!text) return
     tryMarkRead()
-    const newReply = { id: `local-${Date.now()}`, author: 'me' as const, content: text }
+    const newReply = { id: `local-${Date.now()}`, sender: 'me' as const, content: text }
     setLocalReplies([...localReplies, newReply])
     setReplyText('')
     setReplyInputVisible(false)
@@ -124,7 +130,8 @@ const CommentMessageItem = ({ item, onMarkRead, onReply, onDelete, swipeOpen, on
             <div className='reply-list-box'>
               {localReplies.map((r) => (
                 <div key={r.id} className='reply-list-row'>
-                  <span className='reply-author'>{r.author === 'me' ? '我' : 'ta'}</span>
+                  {/*+ sender='me' 显示"我 {content}"，'you' 显示"ta {content}" */}
+                  <span className='reply-author'>{r.sender === 'me' ? '我' : 'ta'}</span>
                   <span className='reply-content-text'>{r.content}</span>
                 </div>
               ))}

@@ -8,6 +8,8 @@ import Taro, { useDidHide } from '@tarojs/taro'
 import { View } from '@tarojs/components'
 import { Button } from '@nutui/nutui-react'
 import { ArrowDown, ArrowUp } from '@nutui/icons-react'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/store'
 import Avatar from '@/components/Avatar'
 import type { Comment } from '@/types/entity'
 import './index.less'
@@ -118,10 +120,13 @@ const CommentSection = (props: CommentSectionProps) => {
   } | null>(null)
 
   // ---------- 派生 ----------
-  //+ 已加载评论总数：一级 + 所有已加载二级（用于标题展示）
+  //+ 评论总数：优先用后端返回的 totalComments（含二级回复），降级用已加载数据累加
+  const storeTotalComments = useSelector((state: RootState) => state.comment.totalComments)
   const totalCount = useMemo(
-    () => comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0),
-    [comments]
+    () => storeTotalComments > 0
+      ? storeTotalComments
+      : comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0),
+    [storeTotalComments, comments]
   )
 
   // ---------- 工具：本地更新 ----------
@@ -341,11 +346,21 @@ const CommentSection = (props: CommentSectionProps) => {
         )}
         {comments.map(renderLevel1)}
 
-        {/* 加载更多一级评论 */}
-        {hasMoreComments && onLoadMoreComments && (
-          <div className='comment-load-more' onClick={handleLoadMoreComments}>
-            {loadingMore ? '加载中...' : '加载更多评论'}
+        {/* 一级评论加载更多：滑动触发为主，点击作兜底 */}
+        {/* hasMore=true && loadingMore=false → 提示"上滑加载更多/手动点"（点击兜底触发 handleLoadMoreComments）*/}
+        {/* hasMore=true && loadingMore=true  → 提示"加载中..." */}
+        {/* hasMore=false                     → 提示"已经到底啦" */}
+        {hasMoreComments ? (
+          <div
+            className='comment-load-more'
+            onClick={loadingMore ? undefined : handleLoadMoreComments}
+          >
+            {loadingMore ? '加载中...' : '上滑加载更多，或者点我'}
           </div>
+        ) : (
+          comments.length > 0 && (
+            <div className='comment-load-more comment-no-more'>— 已经到底啦 —</div>
+          )
         )}
       </div>
 

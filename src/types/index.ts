@@ -46,6 +46,8 @@ export type {
   CommentRepliesQueryParams,
   MessageSenderDTO,
   MessageDTO,
+  MessageCommentDTO,
+  MessageReplyDTO,
   MessageListResult,
   UnreadCountResult,
   MessageReplyResult,

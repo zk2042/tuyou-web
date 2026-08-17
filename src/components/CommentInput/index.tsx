@@ -117,9 +117,15 @@ const CommentInput: React.FC<CommentInputProps> = ({
         replyToId: replyTarget?.replyToId ?? null,
         replyToName: replyTarget?.replyToName ?? null,
       })
-    } catch (e) {
+    } catch (e: any) {
       //+ 失败时父组件处理回滚，这里仅保留已输入内容方便重发
-      Toast.show({ content: '评论失败', duration: 1 })
+      //+ code=2001 后端违禁词，单独提示；其他保持"评论失败"
+      const code = e?.code
+      if (code === 2001) {
+        Toast.show({ content: e?.message || '内容包含违规词汇', duration: 1 })
+      } else {
+        Toast.show({ content: '评论失败', duration: 1 })
+      }
       return
     }
     //+ 成功后才提示，避免 API 失败时误导用户

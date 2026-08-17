@@ -27,13 +27,18 @@
     font-size: 28px;
   }
 
-  //+ 加载更多一级评论按钮
+  //+ 加载更多一级评论（滑动触发为主，点击作兜底）
   .comment-load-more {
     text-align: center;
-    color: #2e7d32;
     padding: 24px 0;
     font-size: 26px;
     cursor: pointer;
+    color: #2e7d32;
+    //+ "已经到底啦"：灰色，不可点
+    &.comment-no-more {
+      color: #bbb;
+      cursor: default;
+    }
   }
 }
 

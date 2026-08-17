@@ -226,8 +226,9 @@ export interface InteractionMessage {
   createdAt: string
   read: boolean
   replyCount: number
-  //+ 评论消息的已展开回复列表（仅 type='comment' 时有值）
-  replies?: { id: string; author: 'me' | 'ta'; content: string }[]
+  //+ 评论消息的回复列表（仅 type='comment' 时有值，后端 comment.replies 映射）
+  //+ sender: 'me'=我发出的回复，'you'=对方发给我的
+  replies?: { id: string; sender: 'me' | 'you'; content: string }[]
 }
 
 //+ 系统消息（对齐 GET /messages/system 响应）

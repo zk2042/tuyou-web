@@ -270,7 +270,8 @@ export const replyInteraction = createAsyncThunk(
     try {
       const res = await replyInteractionAPI(args.id, args.content)
       if (res.code === 0 || res.code === 200) {
-        return { messageId: args.id, reply: res.data }
+        //+ 带 args.content 兜底：后端返回的 reply.content 可能因 data 结构不一致而为 undefined
+        return { messageId: args.id, reply: res.data, content: args.content }
       }
       return rejectWithValue(res.message || '回复失败')
     } catch (error: any) {
@@ -499,14 +500,16 @@ const messageSlice = createSlice({
         state.unreadTotal = 0
       })
       //+ ==================== 回复互动消息 ====================
-      .addCase(replyInteraction.fulfilled, (state, action: PayloadAction<{ messageId: string; reply: MessageReplyResult }>) => {
-        const { messageId, reply } = action.payload
+      .addCase(replyInteraction.fulfilled, (state, action: PayloadAction<{ messageId: string; reply: MessageReplyResult; content: string }>) => {
+        const { messageId, reply, content } = action.payload
+        //+ content 用 payload.content 兜底 reply.content（后端 data 结构可能不一致）
+        const replyContent = reply.content || content
         state.interactionList = state.interactionList.map(m => {
           if (m.id !== messageId) return m
           const replies = m.replies || []
           return {
             ...m,
-            replies: [...replies, { id: reply.id, author: 'me' as const, content: reply.content }],
+            replies: [...replies, { id: reply.id, sender: 'me' as const, content: replyContent }],
             replyCount: (m.replyCount || 0) + 1
           }
         })

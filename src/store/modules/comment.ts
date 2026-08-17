@@ -10,6 +10,13 @@ import {
   getCommentRepliesAPI
 } from '@/apis/comment'
 import type { Comment, PageResult, CreateCommentParams } from '@/types'
+import { diffCommentLikes, type CommentLikePatch } from '@/utils/diffCommentLikes'
+
+//+ 轮询结果类型：pollCommentUpdates.fulfilled 的 payload
+interface CommentPollResult {
+  patch: CommentLikePatch[]
+  totalComments?: number
+}
 
 //+ 评论列表查询参数（fetchComments）
 export interface FetchCommentsArgs {
@@ -34,6 +41,8 @@ export interface CommentState {
   //+ 一级评论列表
   list: Comment[]
   total: number
+  //+ 含二级回复的评论总数（后端返回，用于评论区标题展示真实总数）
+  totalComments: number
   page: number
   size: number
   totalPage: number
@@ -46,6 +55,9 @@ export interface CommentState {
   //+ 二级评论分页：parentId → 下一页页码 / 是否还有更多
   repliesPage: Record<string, number>
   repliesHasMore: Record<string, boolean>
+  //+ 评论点赞乐观更新时间戳：commentId → 最近一次 toggleCommentLike.pending 的时间
+  //+ 轮询 patch 时跳过 2s 内操作过的评论，避免覆盖乐观值导致 UI 闪烁
+  lastLikedAt: Record<string, number>
 }
 
 //+ 初始状态
@@ -54,6 +66,7 @@ const initialState: CommentState = {
   targetId: null,
   list: [],
   total: 0,
+  totalComments: 0,
   page: 1,
   size: 15,
   totalPage: 0,
@@ -63,7 +76,8 @@ const initialState: CommentState = {
   sending: false,
   error: null,
   repliesPage: {},
-  repliesHasMore: {}
+  repliesHasMore: {},
+  lastLikedAt: {}
 }
 
 // ==================== 树操作工具（不可变）====================
@@ -177,6 +191,7 @@ export const loadMoreComments = createAsyncThunk(
 )
 
 //+ 发表评论（一级或回复），返回带真实 id 的 Comment
+//+ reject 携带 { code, message }：组件层据 code 区分提示（如 2001=违禁词）
 export const createComment = createAsyncThunk(
   'comment/createComment',
   async (args: CreateCommentParams, { rejectWithValue }) => {
@@ -185,9 +200,14 @@ export const createComment = createAsyncThunk(
       if (res.code === 0 || res.code === 200) {
         return res.data
       }
-      return rejectWithValue(res.message || '发表评论失败')
+      return rejectWithValue({ code: res.code, message: res.message || '发表评论失败' })
     } catch (error: any) {
-      return rejectWithValue(error?.message || '网络错误')
+      //+ request.ts 在 code 非 0/200 时 reject(完整 ResponseData)
+      //+ 透传后端的 code（如 2001=违禁词）和 message，让组件层能区分业务错误
+      return rejectWithValue({
+        code: typeof error?.code === 'number' ? error.code : -1,
+        message: error?.message || '网络错误'
+      })
     }
   }
 )
@@ -254,6 +274,42 @@ export const fetchReplies = createAsyncThunk(
   }
 )
 
+//+ 轮询：拉取当前页一级评论（自带 replies 前2条），与本地 diff 后只 patch likeCount 变化项
+//+ 设计：
+//+   1. 只请求当前 page 的一级评论，不单独请求二级"加载更多"页（权衡实时性 vs 流量）
+//+   2. diff 只输出 likeCount 变化的项，reducer 跳过 2s 内有乐观更新的项
+//+   3. totalComments 也顺带刷新（评论总数实时同步）
+//+   4. 不替换整个 list，只改 likeCount 字段，引用最小化，UI 无抖动
+export const pollCommentUpdates = createAsyncThunk(
+  'comment/pollCommentUpdates',
+  async (_, { getState, rejectWithValue }) => {
+    const state = (getState() as { comment: CommentState }).comment
+    //+ targetType/targetId 为空（未进入详情页）→ 不轮询
+    if (state.targetType == null || !state.targetId) {
+      return rejectWithValue('no target')
+    }
+    try {
+      const res = await getCommentsAPI({
+        targetType: state.targetType,
+        targetId: Number(state.targetId) || 0,
+        page: state.page,
+        size: state.size
+      })
+      if (res.code !== 0 && res.code !== 200) {
+        return rejectWithValue(res.message || 'poll failed')
+      }
+      //+ diff 出 likeCount 变化项
+      const patch = diffCommentLikes(state.list, res.data.list)
+      return {
+        patch,
+        totalComments: res.data.totalComments
+      }
+    } catch (error: any) {
+      return rejectWithValue(error?.message || '网络错误')
+    }
+  }
+)
+
 // ==================== Slice ====================
 
 const commentSlice = createSlice({
@@ -264,6 +320,7 @@ const commentSlice = createSlice({
     resetComments(state) {
       state.list = []
       state.total = 0
+      state.totalComments = 0
       state.page = 1
       state.totalPage = 0
       state.hasMore = false
@@ -273,6 +330,7 @@ const commentSlice = createSlice({
       state.error = null
       state.repliesPage = {}
       state.repliesHasMore = {}
+      state.lastLikedAt = {}
     }
   },
   extraReducers: (builder) => {
@@ -283,10 +341,12 @@ const commentSlice = createSlice({
         state.error = null
       })
       .addCase(fetchComments.fulfilled, (state, action: PayloadAction<PageResult<Comment> & { targetType: number; targetId: string }>) => {
-        const { list, total, page, size, total_page, targetType, targetId } = action.payload
+        const { list, total, totalComments, page, size, total_page, targetType, targetId } = action.payload
         state.loading = false
         state.list = list
         state.total = total
+        //+ 评论总数（含二级回复）：后端返回则用，否则降级为一级 total
+        state.totalComments = totalComments ?? total
         state.page = page
         state.size = size
         state.totalPage = total_page || 0
@@ -336,11 +396,14 @@ const commentSlice = createSlice({
       })
       .addCase(createComment.rejected, (state, action) => {
         state.sending = false
-        state.error = action.payload as string
+        //+ payload 现为 { code, message } 对象，取 message 存 error
+        state.error = (action.payload as { code: number; message: string })?.message || '发表评论失败'
       })
       //+ 评论点赞：pending 乐观翻转，rejected 回滚，fulfilled 校准（同时支持一级/二级评论树）
       .addCase(toggleCommentLike.pending, (state, action) => {
         const id = action.meta.arg
+        //+ 记录乐观更新时间，轮询 patch 时跳过 2s 内操作过的评论
+        state.lastLikedAt[id] = Date.now()
         //+ 遍历树找目标，翻转 isLiked 与 likeCount
         const mutList = [...state.list]
         for (let i = 0; i < mutList.length; i++) {
@@ -409,6 +472,29 @@ const commentSlice = createSlice({
         state.list = appendRepliesToParent(state.list, parentId, list)
         state.repliesPage[parentId] = page + 1
         state.repliesHasMore[parentId] = hasMore
+      })
+      //+ 轮询：只 patch likeCount 变化项 + 刷新 totalComments，不替换整个 list
+      //+ 跳过 2s 内有 toggleCommentLike 操作的评论，避免覆盖乐观值
+      .addCase(pollCommentUpdates.fulfilled, (state, action: PayloadAction<CommentPollResult>) => {
+        const { patch, totalComments } = action.payload
+        if (patch.length === 0) {
+          //+ 无 likeCount 变化，只更新 totalComments（若后端有返回）
+          if (typeof totalComments === 'number') state.totalComments = totalComments
+          return
+        }
+        const now = Date.now()
+        //+ 过滤掉 2s 内有乐观更新的评论
+        const effectivePatch = patch.filter(p => {
+          const ts = state.lastLikedAt[p.id]
+          return !ts || (now - ts) > 2000
+        })
+        //+ 逐项 patch likeCount，复用 updateCommentInTree 保持引用最小化
+        for (const p of effectivePatch) {
+          state.list = updateCommentInTree(state.list, p.id, { likeCount: p.likeCount })
+        }
+        if (typeof totalComments === 'number') {
+          state.totalComments = totalComments
+        }
       })
   }
 })
