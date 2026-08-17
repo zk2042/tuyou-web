@@ -11,13 +11,15 @@ interface UserListItemProps {
   user: UserPublic
   /** 关注按钮 loading 状态（请求中置灰） */
   loading?: boolean
+  /** 未关注时的按钮文案：关注列表场景传"关注"，粉丝列表场景传"回关" */
+  followText?: string
   /** 关注/回关切换回调 */
   onToggleFollow: (id: string, currentStatus: boolean) => void
   /** 点击用户项回调 */
   onUserClick: (user: UserPublic) => void
 }
 
-const UserListItem = memo(({ user, loading, onToggleFollow, onUserClick }: UserListItemProps) => {
+const UserListItem = memo(({ user, loading, followText = '回关', onToggleFollow, onUserClick }: UserListItemProps) => {
   return (
     <div className='user-item' onClick={() => onUserClick(user)}>
       <Avatar url={user.avatar} size='35' />
@@ -36,7 +38,7 @@ const UserListItem = memo(({ user, loading, onToggleFollow, onUserClick }: UserL
           onToggleFollow(user.id, !!user.isFollowed)
         }}
       >
-        {user.isFollowed ? '已关注' : '回关'}
+        {user.isFollowed ? '已关注' : followText}
       </Button>
     </div>
   )

@@ -102,6 +102,7 @@ const FollowList = () => {
       if (serverStatus !== newStatus) {
         paged.updateItem(i => i.id === id, item => ({ ...item, isFollowed: serverStatus }))
       }
+      //+ 关注列表场景：按钮文案为"关注/已关注"
       Taro.showToast({ title: serverStatus ? '关注成功' : '已取消关注', icon: 'success' })
     } else {
       //+ 失败回滚
@@ -130,6 +131,7 @@ const FollowList = () => {
               key={user.id}
               user={user}
               loading={isLoading(`follow:${user.id}`)}
+              followText='关注'
               onToggleFollow={handleToggleFollow}
               onUserClick={handleUserClick}
             />
