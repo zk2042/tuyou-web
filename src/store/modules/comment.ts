@@ -289,20 +289,32 @@ export const pollCommentUpdates = createAsyncThunk(
       return rejectWithValue('no target')
     }
     try {
-      const res = await getCommentsAPI({
-        targetType: state.targetType,
-        targetId: Number(state.targetId) || 0,
-        page: state.page,
-        size: state.size
-      })
-      if (res.code !== 0 && res.code !== 200) {
-        return rejectWithValue(res.message || 'poll failed')
+      //+ 并发请求所有已加载的一级评论页（1 ~ state.page）
+      //+ 之前只请求 state.page（当前页），导致前几页的 likeCount 变化轮询不到
+      const pages = Array.from({ length: state.page }, (_, i) => i + 1)
+      const results = await Promise.all(
+        pages.map(page =>
+          getCommentsAPI({
+            targetType: state.targetType!,
+            targetId: Number(state.targetId) || 0,
+            page,
+            size: state.size
+          })
+        )
+      )
+      //+ 任一页失败则整体失败（保持数据一致性）
+      const failed = results.find(r => r.code !== 0 && r.code !== 200)
+      if (failed) {
+        return rejectWithValue(failed.message || 'poll failed')
       }
-      //+ diff 出 likeCount 变化项
-      const patch = diffCommentLikes(state.list, res.data.list)
+      //+ 合并所有页的评论列表，按页顺序拼接
+      const allRemoteComments = results.flatMap(r => r.data.list)
+      //+ diff 出 likeCount 变化项（一级 + 二级前2条都会比对）
+      const patch = diffCommentLikes(state.list, allRemoteComments)
+      //+ totalComments 每页都返回相同值，取第一页的即可
       return {
         patch,
-        totalComments: res.data.totalComments
+        totalComments: results[0]?.data.totalComments
       }
     } catch (error: any) {
       return rejectWithValue(error?.message || '网络错误')
