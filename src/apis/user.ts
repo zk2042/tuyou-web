@@ -1,5 +1,6 @@
 //+ 导入请求工具
 import { get, post, put } from '@/utils/request'
+import type { MemberInfo } from '@/types'
 
 //+ ========== 认证模块 ==========
 
@@ -54,6 +55,12 @@ export function healthCheck() {
 //+ 获取用户信息
 export function getUserProfileAPI() {
   return get('/user/profile')
+}
+
+//+ 获取用户基础信息（通用接口 /member/info，含 role 字段判断领队/会员）
+//+ 用于发布活动按钮的角色判断等需要实时数据的场景
+export function getMemberInfoAPI(signal?: AbortSignal | null) {
+  return get<MemberInfo>('/member/info', undefined, undefined, signal)
 }
 
 //+ 更新用户资料

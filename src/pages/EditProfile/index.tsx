@@ -117,6 +117,12 @@ const EditProfile = () => {
       return
     }
 
+    //+ 个性签名非空校验：避免用户清空后回个人中心显示省略号兜底数据
+    if (!form.signature.trim()) {
+      Taro.showToast({ title: '个性签名不能为空', icon: 'none' })
+      return
+    }
+
     setSubmitting(true)
     try {
       // 页面 signature → 接口 bio 字段

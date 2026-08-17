@@ -16,7 +16,6 @@ export const ROUTE_PATHS = {
   MESSAGE: '/pages/Message/index',
   PROFILE: '/pages/Profile/index',
   EDIT_PROFILE: '/pages/EditProfile/index',
-  EDIT_USER_INFO: '/pages/EditUserInfo/index',
   MY_ACTIVITY: '/pages/MyActivity/index',
   CONTENT: '/pages/Content/index',
   FOLLOW_LIST: '/pages/FollowList/index',

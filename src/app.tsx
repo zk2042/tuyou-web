@@ -5,7 +5,8 @@ import store from '@/store'
 import TabList from '@/components/TabList'
 import Taro from '@tarojs/taro'
 import { fetchUnreadCount, resetMessageState } from '@/store/modules/message'
-import { isLoggedIn, clearToken } from '@/utils/token'
+import { getUserInfo } from '@/store/modules/user'
+import { isLoggedIn } from '@/utils/token'
 import { disconnectSSE } from '@/utils/sse'
 import { useSSE } from '@/hooks/useSSE'
 import MessageToast from '@/components/MessageToast'
@@ -72,9 +73,11 @@ function SSEProvider() {
 function App({ children }: PropsWithChildren<any>) {
   useLaunch(() => {
     console.log('App launched.')
-    //+ 应用启动时拉取未读消息数（仅已登录用户），用于 TabBar 红点
+    //+ 应用启动时拉取未读消息数 + 用户信息（仅已登录用户）
+    //+ 用户信息供 SearchBar 头像、发布按钮角色判断等全局场景使用
     if (isLoggedIn()) {
       store.dispatch(fetchUnreadCount())
+      store.dispatch(getUserInfo())
     }
   })
 

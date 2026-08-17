@@ -9,6 +9,7 @@
 export type {
   User,
   UserPublic,
+  MemberInfo,
   Post,
   FeedItem,
   SlideItem,

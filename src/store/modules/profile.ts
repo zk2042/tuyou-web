@@ -262,9 +262,10 @@ const profileSlice = createSlice({
         state.infoLoading = false
         state.infoError = action.payload as string
       })
-      //+ 编辑个人信息成功后更新 info
+      //+ 编辑个人信息成功后更新 info（merge 而非 replace）
+      //+ 避免 PUT 接口返回字段不完整（如缺少 publishCount/followCount/fansCount）时丢字段
       .addCase(fetchUpdateProfile.fulfilled, (state, action: PayloadAction<ProfileInfo>) => {
-        state.info = action.payload
+        state.info = { ...state.info, ...action.payload } as ProfileInfo
       })
       //+ 笔记列表（累积）
       .addCase(fetchProfileNotes.pending, (state) => {

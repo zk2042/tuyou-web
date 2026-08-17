@@ -210,8 +210,24 @@ const userSlice = createSlice({
       .addCase(fetchLogin.fulfilled, (state, action) => {
         state.loading = false
         state.isLoggedIn = true
-        //+ 响应中的 member 字段映射到 userInfo
-        state.userInfo = action.payload.member || action.payload.user || null
+        //+ 响应中的 member 字段映射到 userInfo（补齐完整 User 类型缺失字段）
+        //+ 登录返回的 member 为精简结构 {id, nickname, phone, avatar}，其余字段用默认值补齐
+        //+ 保证 SearchBar 头像立即可用 member.avatar，无需等待 getUserInfo() 返回
+        const raw = action.payload.member || action.payload.user || null
+        state.userInfo = raw
+          ? ({
+              id: raw.id ?? '',
+              phone: raw.phone ?? '',
+              nickname: raw.nickname ?? '',
+              avatar: raw.avatar ?? '',
+              bio: raw.bio ?? '',
+              bgImg: raw.bgImg ?? '',
+              memberType: raw.memberType ?? 1,
+              publishCount: raw.publishCount ?? 0,
+              followCount: raw.followCount ?? 0,
+              fansCount: raw.fansCount ?? 0,
+            } as UserInfo)
+          : null
       })
       .addCase(fetchLogin.rejected, (state, action) => {
         state.loading = false
@@ -225,8 +241,23 @@ const userSlice = createSlice({
       .addCase(fetchRegister.fulfilled, (state, action) => {
         state.loading = false
         state.isLoggedIn = true
-        //+ 响应中的 member 字段映射到 userInfo
-        state.userInfo = action.payload.member || action.payload.user || null
+        //+ 响应中的 member 字段映射到 userInfo（补齐完整 User 类型缺失字段，与登录逻辑一致）
+        //+ 注册返回的 member 为精简结构 {id, nickname, phone, avatar?}，其余字段用默认值补齐
+        const raw = action.payload.member || action.payload.user || null
+        state.userInfo = raw
+          ? ({
+              id: raw.id ?? '',
+              phone: raw.phone ?? '',
+              nickname: raw.nickname ?? '',
+              avatar: raw.avatar ?? '',
+              bio: raw.bio ?? '',
+              bgImg: raw.bgImg ?? '',
+              memberType: raw.memberType ?? 1,
+              publishCount: raw.publishCount ?? 0,
+              followCount: raw.followCount ?? 0,
+              fansCount: raw.fansCount ?? 0,
+            } as UserInfo)
+          : null
       })
       .addCase(fetchRegister.rejected, (state, action) => {
         state.loading = false

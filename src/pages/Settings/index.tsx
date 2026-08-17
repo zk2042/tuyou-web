@@ -19,8 +19,9 @@ const switchItems = [
 ]
 
 //+ 跳转项配置
+//+ 编辑资料与个人中心统一使用 EditProfile 页面和 PUT /personal 接口
 const navigateItems = [
-  { key: 'editUserInfo', label: '编辑资料', path: '/pages/EditUserInfo/index',icon:'icon-bianjiziliao' },
+  { key: 'editUserInfo', label: '编辑资料', path: '/pages/EditProfile/index',icon:'icon-bianjiziliao' },
   { key: 'privacy', label: '隐私设置', path: '' ,icon:'icon-yinsishezhi'},
   { key: 'help', label: '帮助与反馈', path: '',icon:'icon-bangzhuyufankui' },
   { key: 'about', label: '关于途友', path: '',icon:'icon-guanyu' },

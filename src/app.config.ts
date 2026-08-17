@@ -20,7 +20,6 @@ export default defineAppConfig({
     'pages/ActivityDetail/index',
     // 个人中心
     'pages/EditProfile/index',
-    'pages/EditUserInfo/index',
     'pages/MyActivity/index',
     'pages/Content/index',
     'pages/FollowList/index',

@@ -133,10 +133,13 @@
 
   .leader-info {
     flex: 1;
+    //+ min-width:0 + overflow:hidden 让 Ellipsis 在 flex 子项中能正确截断
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    
+
 
     .leader-name {
       font-size: 0.7rem;

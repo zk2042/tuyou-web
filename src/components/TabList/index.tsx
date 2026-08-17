@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
+import { getMemberInfoAPI } from '@/apis/user'
 //+ 阿里 iconfont 字符图标样式
 import '@/assets/iconfont.css'
 import './index.less'
@@ -101,7 +102,7 @@ const TabList = () => {
 
     }
   ]
-  const handleSelect=(item:any)=>{
+  const handleSelect=async (item:any)=>{
     setIsVisible(false)
     // 根据 option name 跳转到对应的发布页
     switch (item.name) {
@@ -112,8 +113,33 @@ const TabList = () => {
         Taro.navigateTo({ url: '/pages/PublishGuide/index' })
         break
       case '发起活动':
-        Taro.navigateTo({ url: '/pages/PublishActivity/index' })
+        //+ 实时调用通用接口 /member/info 判断角色，不依赖本地可能过期的 store
+        //+ 领队可发布活动，普通会员拦截并提示；前端拦截 + 后端 403 双重保险
+        await handlePublishActivity()
         break
+    }
+  }
+
+  //+ 发布活动：实时请求 /member/info 获取 role 字段判断领队/会员
+  //+ 请求期间 showLoading + mask 防止用户连点；失败兜底提示不跳转
+  const handlePublishActivity = async () => {
+    Taro.showLoading({ title: '判断中...', mask: true })
+    try {
+      const res = await getMemberInfoAPI()
+      Taro.hideLoading()
+      if (res.code === 0 || res.code === 200) {
+        const role = res.data?.role
+        if (role === '领队') {
+          Taro.navigateTo({ url: '/pages/PublishActivity/index' })
+        } else {
+          Taro.showToast({ title: '仅领队可发布活动', icon: 'none' })
+        }
+      } else {
+        Taro.showToast({ title: res.message || '获取用户信息失败', icon: 'none' })
+      }
+    } catch (err) {
+      Taro.hideLoading()
+      Taro.showToast({ title: '网络异常，请重试', icon: 'none' })
     }
   }
 

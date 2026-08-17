@@ -38,6 +38,16 @@ export interface UserPublic extends User {
   isFollowed?: boolean
 }
 
+//+ 用户基础信息（通用接口 /member/info 返回）
+//+ role 为中文字符串：'领队' 或 '普通会员'
+//+ 用于发布活动按钮等需要实时判断角色的场景
+export interface MemberInfo {
+  id: string
+  nickname: string
+  avatar: string
+  role: '领队' | '普通会员'
+}
+
 //+ Post数据结构（笔记/攻略详情）
 //+ 笔记和攻略共用此结构，通过 type 区分（'note'/'guide'）
 //+ 攻略额外包含 routeInfo
@@ -130,6 +140,8 @@ export interface Activity {
     id: string
     nickname: string
     avatar: string
+    //+ 领队个性签名（详情接口返回，可能很长，前端用 Ellipsis 截断）
+    bio?: string
   }
   title: string
   coverImg: string
@@ -164,6 +176,8 @@ export interface ActivityListItem {
     id: string
     nickname: string
     avatar: string
+    //+ 领队个性签名（列表接口若返回则展示）
+    bio?: string
   }
   title: string
   coverImg: string

@@ -46,11 +46,13 @@ const Profile = () => {
   })
 
   //+ 展示数据：优先 profile.info，其次 user.userInfo，最后静态兜底
+  //+ 使用 ?? 而非 ||：只在 null/undefined 时兜底，保留空字符串
+  //+ 避免用户清空签名后后端返回 bio:'' 被 || 跳过显示旧数据
   const displayData = {
-    avatar: profileInfo?.avatar || userInfo?.avatar || fallbackUserData.avatar,
-    nickname: profileInfo?.nickname || userInfo?.nickname || fallbackUserData.nickname,
-    signature: profileInfo?.bio || userInfo?.bio || fallbackUserData.signature,
-    bgImg: profileInfo?.bgImg || userInfo?.bgImg || fallbackUserData.bgImg,
+    avatar: profileInfo?.avatar ?? userInfo?.avatar ?? fallbackUserData.avatar,
+    nickname: profileInfo?.nickname ?? userInfo?.nickname ?? fallbackUserData.nickname,
+    signature: profileInfo?.bio ?? userInfo?.bio ?? fallbackUserData.signature,
+    bgImg: profileInfo?.bgImg ?? userInfo?.bgImg ?? fallbackUserData.bgImg,
   }
 
   //+ 社交数据：优先 profile.info，其次 user.userInfo，无数据时显示 0

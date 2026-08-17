@@ -81,12 +81,14 @@ const activityTitles = [
 //+ 生成活动数据（leader 从 mockLeaders 取，members 从 mockUsers 取）
 function generateActivity(id: number) {
   const type = randomItem(activityTypes)
-  //+ 领队从 mockLeaders 中随机选取，只提取 id/nickname/avatar
+  //+ 领队从 mockLeaders 中随机选取，提取 id/nickname/avatar/bio
+  //+ bio 字段与真实后端对齐（活动详情接口 leader 携带 bio）
   const leader = randomItem(mockLeaders)
   const leaderInfo = {
     id: leader.id,
     nickname: leader.nickname,
-    avatar: leader.avatar
+    avatar: leader.avatar,
+    bio: leader.bio || ''
   }
 
   return {
@@ -166,7 +168,8 @@ export const activityMockRoutes: Record<string, (data?: any, url?: string) => an
       leader: {
         id: creator.id,
         nickname: creator.nickname,
-        avatar: creator.avatar
+        avatar: creator.avatar,
+        bio: creator.bio || ''
       },
       title: data?.title || '新活动',
       coverImg: data?.coverImg || '',

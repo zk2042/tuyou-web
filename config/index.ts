@@ -116,7 +116,6 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
           '/pages/Settings/index': '/settings',
           '/pages/MyActivity/index': '/my-activity',
           '/pages/EditProfile/index': '/edit-profile',
-          '/pages/EditUserInfo/index': '/edit-user-info',
         }
       },
       output: {

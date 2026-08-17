@@ -322,7 +322,12 @@ const ActivityDetail = () => {
                     <Avatar url={currentActivity.leader.avatar} size='40px' />
                     <div className='leader-info'>
                       <span className='leader-name'>{currentActivity.leader.nickname}</span>
-                      <span className='leader-bio'>帐篷就是我的第二个家</span>
+                      {/* 领队个性签名：bio 可能很长，用 Ellipsis 单行截断；为空显示占位 */}
+                      <Ellipsis
+                        className='leader-bio'
+                        content={currentActivity.leader.bio || '暂无简介'}
+                        rows={1}
+                      />
                     </div>
                     <Button onClick={handleFollow}>{leaderFollowed ? '已关注' : '+ 关注'}</Button>
                   </div>

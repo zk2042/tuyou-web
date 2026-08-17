@@ -1,13 +1,14 @@
 //+ FollowList 关注列表页
 //+ 结构：HeaderNavBar（无取消文字，固定头部） + 关注列表 + 关注按钮切换
 //+ 统一接入 usePagedList + fetchFollowList + 上拉加载/下拉刷新 + 真实关注API
+//+ 性能优化：列表项拆 UserListItem 子组件 + React.memo + useToggleAction（请求锁+abort+冷却+按钮loading）
 import { useCallback, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
-import { Button } from '@nutui/nutui-react'
 import HeaderNavBar from '@/components/HeaderNavBar'
-import Avatar from '@/components/Avatar'
+import UserListItem from '@/components/UserListItem'
 import { usePagedList } from '@/hooks/usePagedList'
+import { useToggleAction } from '@/hooks/useToggleAction'
 import { fetchFollowList } from '@/store/modules/profile'
 import { toggleProfileFollowAPI } from '@/apis/profile'
 import type { FollowItem, UserPublic, PageResult } from '@/types'
@@ -59,6 +60,11 @@ const FollowList = () => {
     )
   })
 
+  //+ Toggle 操作通用 Hook：请求锁 + AbortController + 800ms 冷却 + loading 状态
+  const { toggle, isLoading } = useToggleAction({
+    apiFn: useCallback((id: string, signal: AbortSignal) => toggleProfileFollowAPI(id, signal), [])
+  })
+
   //+ 页面显示时加载第一页（实时刷新）
   useDidShow(() => {
     paged.loadFirstPage()
@@ -81,29 +87,33 @@ const FollowList = () => {
     }
   }
 
-  //+ 切换关注状态（调用 /personal/follow/{id}，乐观更新，失败回滚）
-  const handleToggleFollow = async (e: any, id: string, currentStatus: boolean) => {
-    e.stopPropagation()
+  //+ 切换关注状态（useToggleAction 防狂点 + abort + 冷却；乐观更新失败回滚）
+  //+ useCallback 稳定引用，避免 UserListItem 因回调变化重渲染
+  const handleToggleFollow = useCallback(async (id: string, currentStatus: boolean) => {
     const newStatus = !currentStatus
+    //+ 乐观更新
     paged.updateItem(i => i.id === id, item => ({ ...item, isFollowed: newStatus }))
-    try {
-      const res = await toggleProfileFollowAPI(id)
+    const resKey = `follow:${id}`
+    const result = await toggle(resKey, id)
+    if (result.wasAborted) return
+    if (result.ok) {
       //+ 以服务端返回的 isFollowed 为准（切换式接口）
-      const serverStatus = !!(res?.data?.isFollowed)
+      const serverStatus = !!(result.data?.isFollowed)
       if (serverStatus !== newStatus) {
         paged.updateItem(i => i.id === id, item => ({ ...item, isFollowed: serverStatus }))
       }
       Taro.showToast({ title: serverStatus ? '关注成功' : '已取消关注', icon: 'success' })
-    } catch (err) {
+    } else {
+      //+ 失败回滚
       paged.updateItem(i => i.id === id, item => ({ ...item, isFollowed: currentStatus }))
-      Taro.showToast({ title: '操作失败', icon: 'none' })
+      Taro.showToast({ title: result.error || '操作失败', icon: 'none' })
     }
-  }
+  }, [paged, toggle])
 
   //+ 点击用户项：跳转个人主页（暂未开发）
-  const handleUserClick = (user: UserPublic) => {
+  const handleUserClick = useCallback((user: UserPublic) => {
     Taro.showToast({ title: `查看 ${user.nickname}`, icon: 'none' })
-  }
+  }, [])
 
   const { list, loading, hasMore } = paged
 
@@ -116,21 +126,13 @@ const FollowList = () => {
           <div className='empty-state'>还没有关注的人</div>
         ) : (
           list.map(user => (
-            <div key={user.id} className='user-item' onClick={() => handleUserClick(user)}>
-              <Avatar url={user.avatar} size='35' />
-              <div className='user-info'>
-                <span className='user-nickname'>{user.nickname}</span>
-                <span className='user-bio'>{user.bio}</span>
-              </div>
-              <Button
-                className={`follow-btn ${user.isFollowed ? 'followed' : ''}`}
-                type={user.isFollowed ? 'default' : 'primary'}
-                size='small'
-                onClick={(ev) => handleToggleFollow(ev, user.id, !!user.isFollowed)}
-              >
-                {user.isFollowed ? '已关注' : '关注'}
-              </Button>
-            </div>
+            <UserListItem
+              key={user.id}
+              user={user}
+              loading={isLoading(`follow:${user.id}`)}
+              onToggleFollow={handleToggleFollow}
+              onUserClick={handleUserClick}
+            />
           ))
         )}
 

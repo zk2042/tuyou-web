@@ -268,6 +268,18 @@ export const userMockRoutes: Record<string, (data?: any, url?: string) => any> =
   //+ 获取当前用户信息（默认返回一个会员用户）
   'GET /api/v1/user/profile': () => successResponse(mockUsers[0]),
 
+  //+ 获取用户基础信息（通用接口 /member/info，含 role 字段）
+  //+ 默认模拟当前登录用户为领队（mockLeaders[0]），便于发布活动按钮测试
+  'GET /api/v1/member/info': () => {
+    const me = mockLeaders[0]
+    return successResponse({
+      id: me.id,
+      nickname: me.nickname,
+      avatar: me.avatar,
+      role: '领队'
+    })
+  },
+
   //+ 更新用户资料
   'PUT /api/v1/user/profile': (data) => ({
     code: 0,
