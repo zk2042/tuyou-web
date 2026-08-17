@@ -294,8 +294,10 @@ const CommentSection = (props: CommentSectionProps) => {
     //+ 可见回复：已展开或有更多待加载时显示全部已加载；否则只显示前2条
     const showAll = expanded || hasMoreReplies
     const visibleReplies = showAll ? allReplies : allReplies.slice(0, DEFAULT_VISIBLE_REPLIES)
-    //+ 是否显示展开行：回复总数 > 2
-    const showExpandRow = replyCount > DEFAULT_VISIBLE_REPLIES
+    //+ 是否显示展开行：回复总数 > 0 即显示入口
+    //+ 后端热度过滤规则：热度达标才附带2条 replies，不达标则 replies 为空
+    //+ 故 replyCount > 0 但 replies 为空时仍需显示入口，点击触发加载更多接口拉取全部二级评论
+    const showExpandRow = replyCount > 0
     //+ 待加载的回复数（用于按钮文案）
     const pendingCount = Math.max(0, replyCount - allReplies.length)
 
