@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { setToken, clearToken } from '@/utils/token'
 import {
   loginAPI,
-  getUserProfileAPI,
+  getMemberInfoAPI,
   registerAPI,
   sendCodeAPI,
   resetPasswordAPI,
@@ -118,7 +118,9 @@ export const getUserInfo = createAsyncThunk(
   'user/getUserInfo',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await getUserProfileAPI()
+      //+ /user/profile 接口不存在，改用通用接口 /member/info 获取最新用户基础信息
+      //+ /member/info 返回 { id, nickname, avatar, role }，用于刷新全局 userInfo 的头像/昵称
+      const res = await getMemberInfoAPI()
 
       if (res.code === 0 || res.code === 200) {
         return res.data
@@ -281,7 +283,24 @@ const userSlice = createSlice({
       })
       .addCase(getUserInfo.fulfilled, (state, action) => {
         state.loading = false
-        state.userInfo = action.payload
+        //+ /member/info 只返回 { id, nickname, avatar, role }，需 merge 到现有 userInfo
+        //+ 保留已有字段（bio/bgImg/计数等），仅用最新 avatar/nickname 覆盖
+        //+ role 映射到 memberType：领队=2，普通会员=1
+        const member = action.payload
+        const memberType = member.role === '领队' ? 2 : 1
+        state.userInfo = {
+          ...(state.userInfo || ({} as UserInfo)),
+          id: member.id ?? state.userInfo?.id ?? '',
+          phone: state.userInfo?.phone ?? '',
+          nickname: member.nickname ?? state.userInfo?.nickname ?? '',
+          avatar: member.avatar ?? state.userInfo?.avatar ?? '',
+          bio: state.userInfo?.bio ?? '',
+          bgImg: state.userInfo?.bgImg ?? '',
+          memberType: state.userInfo?.memberType ?? memberType,
+          publishCount: state.userInfo?.publishCount ?? 0,
+          followCount: state.userInfo?.followCount ?? 0,
+          fansCount: state.userInfo?.fansCount ?? 0,
+        } as UserInfo
         state.isLoggedIn = true
       })
       .addCase(getUserInfo.rejected, (state, action) => {

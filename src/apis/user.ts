@@ -52,13 +52,9 @@ export function healthCheck() {
   return get('/health')
 }
 
-//+ 获取用户信息
-export function getUserProfileAPI() {
-  return get('/user/profile')
-}
-
 //+ 获取用户基础信息（通用接口 /member/info，含 role 字段判断领队/会员）
-//+ 用于发布活动按钮的角色判断等需要实时数据的场景
+//+ 用于：发布活动按钮的角色判断、app 启动刷新全局 userInfo 头像/昵称等场景
+//+ 注意：/user/profile 接口后端不存在，统一改用 /member/info
 export function getMemberInfoAPI(signal?: AbortSignal | null) {
   return get<MemberInfo>('/member/info', undefined, undefined, signal)
 }
