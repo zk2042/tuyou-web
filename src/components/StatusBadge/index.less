@@ -1,0 +1,35 @@
+//+ 账号状态角标样式
+//+ 0=已禁用（灰色背景） 2=已注销（深灰背景）
+//+ 统一灰化视觉，与正常用户昵称形成区分
+.status-badge {
+  display: inline-block;
+  padding: 0 0.3rem;
+  margin-left: 0.3rem;
+  border-radius: 0.2rem;
+  color: #fff;
+  font-weight: normal;
+  vertical-align: middle;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+//+ 小号角标（列表项昵称旁）
+.status-badge-small {
+  font-size: 0.55rem;
+}
+
+//+ 大号角标（资料卡昵称旁）
+.status-badge-large {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+}
+
+//+ 已禁用：中性灰
+.status-badge-0 {
+  background-color: #909399;
+}
+
+//+ 已注销：深灰，更明显的视觉降级
+.status-badge-2 {
+  background-color: #606266;
+}

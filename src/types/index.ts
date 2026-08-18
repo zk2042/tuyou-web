@@ -8,8 +8,11 @@
 //+ 业务实体
 export type {
   User,
+  UserStatus,
   UserPublic,
   MemberInfo,
+  UserDetail,
+  Participant,
   Post,
   FeedItem,
   SlideItem,

@@ -1,0 +1,101 @@
+//+ 横向日期滚动条样式
+//+ 左侧横向滚动日期条（隐藏滚动条），右侧日历图标按钮（固定）
+//+ 日期项：竖排「星期/今天 + 日 + 月」，选中态绿底白字
+
+.date-scroller {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: #fff;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+//+ 日期条：横向滚动，隐藏滚动条
+.date-scroller-list {
+  flex: 1;
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0 0.4rem;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+//+ 日期项
+.date-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  width: 2rem;
+  height: 2.6rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:active {
+    background-color: rgba(46, 125, 50, 0.08);
+  }
+}
+
+.date-item-weekday {
+  font-size: 0.55rem;
+  color: #909399;
+  font-weight: 500;
+}
+
+.date-item-day {
+  font-size: 0.85rem;
+  color: #1a1a1a;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.date-item-month {
+  font-size: 0.5rem;
+  color: #c0c4cc;
+}
+
+//+ 选中态
+.date-item-active {
+  background-color: #2e7d32;
+
+  .date-item-weekday,
+  .date-item-day,
+  .date-item-month {
+    color: #fff;
+  }
+
+  &:active {
+    background-color: #2e7d32;
+  }
+}
+
+//+ 日历图标按钮
+.date-scroller-calendar-btn {
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  :global(.calendar-icon) {
+    width: 1rem;
+    height: 1rem;
+    color: #2e7d32;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}

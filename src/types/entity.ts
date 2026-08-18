@@ -19,7 +19,13 @@
 
 // ========== 业务实体 ==========
 
+//+ 用户账号状态
+//+ 0=禁用 1=正常 2=已注销
+//+ 后端在用户相关响应中可能返回该字段，前端据此渲染角标/灰化
+export type UserStatus = 0 | 1 | 2
+
 //+ 用户信息接口
+//+ status 为可选字段：后端在 /personal 等接口可能返回，未返回时按 undefined 处理（视为正常）
 export interface User {
   id: string
   phone: string
@@ -31,6 +37,8 @@ export interface User {
   publishCount: number
   followCount: number
   fansCount: number
+  //+ 账号状态：0=禁用 1=正常 2=已注销；未返回时为 undefined，前端按正常处理
+  status?: UserStatus
 }
 
 //+ 用户公开资料接口（含关注状态，角色由 UserRole 枚举说明）
@@ -46,6 +54,44 @@ export interface MemberInfo {
   nickname: string
   avatar: string
   role: '领队' | '普通会员'
+}
+
+//+ 用户详情（他人公开资料卡，GET /personal/member/{id} 返回）
+//+ 与 User 区别：包含 favoriteCount/leadingCount/isFollowed/isFollower 等专用于他人资料卡展示的字段
+//+ nickname/bio 已由后端做敏感词打星处理，前端原样展示即可
+//+ status=2 表示已注销，前端标注"已注销"并隐藏关注按钮等可操作项
+export interface UserDetail {
+  id: string
+  nickname: string
+  avatar: string
+  bio: string
+  bgImg: string
+  //+ 角色：领队 / 普通会员
+  role: '领队' | '普通会员'
+  //+ 账号状态：0=禁用 1=正常 2=已注销
+  status: UserStatus
+  followCount: number
+  fansCount: number
+  publishCount: number
+  //+ 收藏数（他人资料卡专有）
+  favoriteCount: number
+  //+ 带队次数（普通会员为 0，他人资料卡专有）
+  leadingCount: number
+  //+ 我是否关注了 TA
+  isFollowed: boolean
+  //+ TA 是否关注我（用于互关判断）
+  isFollower: boolean
+}
+
+//+ 活动报名人（GET /personal/publish-activity 列表项的 participants 数组元素）
+//+ phone 仅领队（发布者本人）可见，非领队接口不返回该字段
+export interface Participant {
+  id: string
+  avatar: string
+  //+ 昵称（后端已做敏感词打星处理）
+  nickname: string
+  //+ 手机号明文，仅领队可见；非领队调用时该字段为 undefined
+  phone?: string
 }
 
 //+ Post数据结构（笔记/攻略详情）
@@ -170,6 +216,8 @@ export interface Activity {
 
 //+ 活动列表项（与 OpenAPI GET /activities 响应 list 项对齐）
 //+ activityStatus 为字符串：报名中/进行中/已结束
+//+ participants 仅在"我发布的活动"接口（GET /personal/publish-activity）返回，全量报名人数组
+//+ 其他活动列表接口不返回 participants，按 undefined 处理
 export interface ActivityListItem {
   id: string
   leader: {
@@ -195,6 +243,9 @@ export interface ActivityListItem {
   joined: boolean
   //+ 是否为本人发布（true=显示头部 more + 删除操作入口）
   isOwner: boolean
+  //+ 报名人列表（仅 GET /personal/publish-activity 返回，全量；含手机号明文，仅领队可见）
+  //+ 其他列表接口不返回该字段，使用时需判空
+  participants?: Participant[]
 }
 
 //+ 评论数据结构（两级）

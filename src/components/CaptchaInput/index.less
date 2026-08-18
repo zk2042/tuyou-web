@@ -1,0 +1,62 @@
+//+ 图形验证码输入组件样式
+//+ 复用 .auth-form-item-code 的相对定位布局，与验证码输入框视觉一致
+//+ 验证码图片按钮固定宽度，避免 base64 加载时宽度抖动
+
+//+ 图形验证码表单项：相对定位，容纳绝对定位的验证码图片
+.auth-form-item-captcha {
+  position: relative;
+}
+
+//+ 验证码输入框：右侧留出空间避免被验证码图片遮挡
+.auth-form-item-captcha .auth-input-captcha {
+  padding-right: 4.5rem !important;
+}
+
+//+ 验证码图片按钮：绝对定位在输入框右侧
+.captcha-image-btn {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 4.6vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background-color: #f5f6f7;
+
+  &--loading {
+    cursor: wait;
+  }
+}
+
+//+ 验证码图片：填满按钮区域，等比缩放
+.captcha-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.3rem;
+}
+
+//+ 加载中/点击获取的占位文案
+.captcha-loading-text {
+  font-size: 0.55rem;
+  color: #909399;
+  white-space: nowrap;
+}
+
+//+ 平板和 PC 端的媒体查询
+@media screen and (min-width: 768px) {
+  .captcha-image-btn {
+    height: 4vh;
+    width: 3rem;
+  }
+
+  .captcha-loading-text {
+    font-size: 0.5rem;
+  }
+}

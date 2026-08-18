@@ -128,7 +128,7 @@ const Login = () => {
 
         {/* 提交按钮 */}
         <Button type="primary" className="auth-submit-btn" onClick={handleSubmit}>
-          {loginMode === 'password' ? '登录' : '验证码登录'}
+          {loginMode === 'password' ? '登录' : '短信登录'}
         </Button>
       </div>
 

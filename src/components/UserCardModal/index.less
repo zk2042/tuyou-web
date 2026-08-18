@@ -1,0 +1,142 @@
+//+ 用户资料卡弹窗样式
+//+ 居中弹窗，宽度自适应；头像/昵称/统计/关注按钮居中布局
+//+ 背景图作为顶部装饰条，下方圆形头像半悬浮其上
+
+.user-card-modal {
+  width: 80vw;
+  max-width: 360px;
+  background-color: #fff;
+  border-radius: 0.6rem;
+  padding-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+//+ 背景图
+.user-card-bg {
+  width: 100%;
+  height: 6rem;
+  overflow: hidden;
+  background-color: #f5f6f7;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+//+ 头像：半悬浮在背景图与昵称之间
+.user-card-avatar {
+  display: flex;
+  justify-content: center;
+  margin-top: -1.75rem;
+
+  :global(.nut-avatar) {
+    border: 0.15rem solid #fff;
+    box-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.1);
+  }
+}
+
+//+ 昵称行：昵称 + 状态角标 + 角色标签
+.user-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  padding: 0 0.8rem;
+
+  :global(.nut-ellipsis) {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    max-width: 60%;
+  }
+}
+
+//+ 领队角色徽章
+.user-card-role-badge {
+  display: inline-block;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.2rem;
+  background-color: #fff3e0;
+  color: #f57c00;
+  font-size: 0.55rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+//+ 简介
+.user-card-bio {
+  padding: 0.3rem 1rem 0;
+  font-size: 0.6rem;
+  color: #606266;
+  text-align: center;
+}
+
+//+ 统计数据行
+.user-card-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 0.6rem;
+  padding: 0.4rem 1rem;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+
+  .stat-num {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .stat-label {
+    font-size: 0.55rem;
+    color: #909399;
+  }
+}
+
+//+ 关注按钮：居中
+.user-card-follow-btn {
+  display: flex;
+  margin: 0.6rem auto 0;
+  min-width: 4rem;
+  height: 1.6rem;
+  border-radius: 1.6rem;
+  font-size: 0.7rem;
+
+  &.nut-button-primary {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+  }
+}
+
+//+ 加载/失败占位文案
+.user-card-loading {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #909399;
+  font-size: 0.65rem;
+}
+
+//+ 关闭按钮：右上角，提高点击区域
+:global(.user-card-close) {
+  width: 1rem;
+  height: 1rem;
+  color: #909399;
+}
+
+//+ 平板和 PC 端的媒体查询
+@media screen and (min-width: 768px) {
+  .user-card-modal {
+    width: 60vw;
+    max-width: 420px;
+  }
+}
