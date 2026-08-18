@@ -7,7 +7,7 @@ import type { MemberInfo } from '@/types'
 //+ 发送验证码
 export function sendCodeAPI(params: {
   phone: string
-  scene: 'register' | 'login' | 'reset-password'
+  scene: 'register' | 'login' | 'reset-pwd'
 }) {
   return post('/auth/send-code', params)
 }

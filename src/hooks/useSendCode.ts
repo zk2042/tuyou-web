@@ -8,7 +8,7 @@ import { fetchSendCode } from '@/store/modules/user'
 import type { AppDispatch } from '@/store'
 
 //+ 验证码场景类型，与后端接口对齐
-type Scene = 'register' | 'login' | 'reset-password'
+type Scene = 'register' | 'login' | 'reset-pwd'
 
 export const useSendCode = (scene: Scene) => {
   const dispatch: AppDispatch = useDispatch<AppDispatch>()

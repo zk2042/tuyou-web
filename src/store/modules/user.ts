@@ -38,7 +38,7 @@ const initialState: UserState = {
 //+ 发送验证码异步Action
 export const fetchSendCode = createAsyncThunk(
   'user/fetchSendCode',
-  async (params: { phone: string; scene: 'register' | 'login' | 'reset-password' }, { rejectWithValue }) => {
+  async (params: { phone: string; scene: 'register' | 'login' | 'reset-pwd' }, { rejectWithValue }) => {
     try {
       const res = await sendCodeAPI(params)
       if (res.code === 0 || res.code === 200) {

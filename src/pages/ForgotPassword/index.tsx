@@ -25,7 +25,7 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   //+ 验证码发送逻辑复用（场景为重置密码）
-  const { codeSent, codeCountdown, sendCode } = useSendCode('reset-password')
+  const { codeSent, codeCountdown, sendCode } = useSendCode('reset-pwd')
 
   //+ 重置密码提交：校验 → 调接口 → 反馈
   const handleSubmit = async () => {
