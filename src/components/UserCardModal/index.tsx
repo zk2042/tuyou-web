@@ -1,13 +1,15 @@
 //+ 用户资料卡弹窗组件
 //+ 场景：关注列表/粉丝列表/评论列表/活动详情页等任何"点击头像"入口
 //+ 调用方传入 visible + userId，组件内部拉取 GET /personal/member/{id} 并渲染
-//+ 关注按钮直接接入 toggleFollowAPI（useToggleAction：请求锁 + abort + 800ms 冷却 + loading）
+//+ 关注按钮接入 toggleProfileFollowAPI（POST /personal/follow/{id}，个人中心关注接口）
 //+ 已注销（status=2）/已禁用（status=0）用户：显示 StatusBadge 角标 + 隐藏关注按钮
 //+ 资料卡用 NutUI Popup（position="center"），关闭按钮在右上角
-import { Popup, Avatar, Button, Ellipsis } from '@nutui/nutui-react'
+import { Popup, Avatar, Button, Ellipsis, Toast } from '@nutui/nutui-react'
 import { Close } from '@nutui/icons-react'
+import Taro from '@tarojs/taro'
 import { useEffect, useState, useCallback } from 'react'
-import { getUserDetailAPI, toggleFollowAPI } from '@/apis/user'
+import { getUserDetailAPI } from '@/apis/user'
+import { toggleProfileFollowAPI } from '@/apis/profile'
 import { useToggleAction } from '@/hooks/useToggleAction'
 import StatusBadge from '@/components/StatusBadge'
 import type { UserDetail } from '@/types'
@@ -30,7 +32,7 @@ const UserCardModal = ({ visible, userId, onClose }: UserCardModalProps) => {
 
   //+ Toggle 操作通用 Hook：防狂点 + abort + 冷却 + 按钮 loading
   const { toggle, isLoading } = useToggleAction({
-    apiFn: useCallback((id: string, signal: AbortSignal) => toggleFollowAPI(id, signal), [])
+    apiFn: useCallback((id: string, signal: AbortSignal) => toggleProfileFollowAPI(id, signal), [])
   })
 
   //+ visible + userId 变化时拉取用户详情
@@ -67,13 +69,23 @@ const UserCardModal = ({ visible, userId, onClose }: UserCardModalProps) => {
     if (!userId || !detail) return
     //+ status=2（已注销）不允许关注
     if (detail.status === 2) return
+    //+ loading 中或冷却期内：提示操作太快，不执行乐观翻转
+    if (isLoading(`follow:${userId}`)) return
     const next = !isFollowed
     //+ 乐观更新
     setIsFollowed(next)
     const result = await toggle(`follow:${userId}`, userId)
-    if (!result.ok && !result.wasAborted) {
-      //+ 失败回滚
+    if (result.wasAborted) {
+      //+ 冷却期被拦截 → 回滚 + 提示操作太快
       setIsFollowed(!next)
+      Taro.showToast({ title: '操作太快了，请稍后再试', icon: 'none' })
+    } else if (!result.ok) {
+      //+ 真正失败 → 回滚 + 错误提示
+      setIsFollowed(!next)
+      Taro.showToast({ title: result.error || '操作失败', icon: 'none' })
+    } else {
+      //+ 成功提示
+      Taro.showToast({ title: next ? '关注成功' : '已取消关注', icon: 'success' })
     }
   }
 

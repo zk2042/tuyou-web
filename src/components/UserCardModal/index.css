@@ -1,0 +1,116 @@
+.comment-section .nut-popup {
+  background-color: transparent;
+  max-width: none;
+  width: 80%;
+  max-height: none;
+}
+.user-card-modal {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 0.6rem;
+  padding-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.user-card-bg {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #f5f6f7;
+}
+.user-card-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.user-card-avatar {
+  display: flex;
+  justify-content: center;
+  margin-top: -1.75rem;
+}
+.user-card-avatar :global(.nut-avatar) {
+  border: 0.15rem solid #fff;
+  box-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.1);
+}
+.user-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  padding: 0 0.8rem;
+}
+.user-card-name :global(.nut-ellipsis) {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  max-width: 60%;
+}
+.user-card-role-badge {
+  display: inline-block;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.2rem;
+  background-color: #fff3e0;
+  color: #f57c00;
+  font-size: 0.55rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.user-card-bio {
+  padding: 0.3rem 1rem 0;
+  font-size: 0.6rem;
+  color: #606266;
+  text-align: center;
+}
+.user-card-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 0.6rem;
+  padding: 0.4rem 1rem;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.user-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.user-card-stat .stat-num {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.user-card-stat .stat-label {
+  font-size: 0.55rem;
+  color: #909399;
+}
+.user-card-follow-btn {
+  display: flex;
+  margin: 0.6rem auto 0;
+  min-width: 4rem;
+  height: 1.6rem;
+  border-radius: 1.6rem;
+  font-size: 0.7rem;
+}
+.user-card-follow-btn.nut-button-primary {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+  color: #fff;
+}
+.user-card-follow-btn.nut-button-default {
+  background-color: #f3f4f6;
+  border-color: #f3f4f6;
+  color: #a3abc0;
+}
+.user-card-loading {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #909399;
+  font-size: 0.65rem;
+}
+:global(.user-card-close) {
+  width: 1rem;
+  height: 1rem;
+  color: #909399;
+}

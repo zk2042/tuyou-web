@@ -43,6 +43,11 @@ const ActivityDetail = () => {
   const cooldownRef = useRef<Map<string, number>>(new Map())
   const COOLDOWN_MS = 800
 
+  //+ 关注/取关发起人（统一走 profile/toggleProfileFollow，POST /personal/follow/{id}）
+  //+ leaderFollowed 初值由后端 leader.isFollowed 同步（见下方 useEffect），本地 state 管理后续切换
+  const [leaderFollowed, setLeaderFollowed] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
+
   //+ 离开页面时 abort 所有未完成请求
   useEffect(() => {
     return () => {
@@ -54,13 +59,21 @@ const ActivityDetail = () => {
 
   //+ 进入页面加载详情
   useEffect(() => {
-    
+
     dispatch(fetchActivityDetail(activityId))
     //+ 离开页面清空详情，避免残留
     return () => {
       dispatch(clearCurrentActivity())
     }
   }, [activityId])
+
+  //+ 详情数据加载后，用后端返回的 leader.isFollowed 初始化关注状态
+  //+ 依赖 activityId：切换不同活动时强制重新同步（即使 isFollowed 值相同）
+  useEffect(() => {
+    if (currentActivity?.isFollowed !== undefined) {
+      setLeaderFollowed(currentActivity.isFollowed)
+    }
+  }, [currentActivity?.isFollowed])
 
   //+ 格式化时间 YYYY-MM-DD HH:mm
   const formatTime = (time: string) => {
@@ -97,7 +110,7 @@ const ActivityDetail = () => {
     if (currentPeople >= maxPeople) return { text: '已满员', disabled: true, btnClass: 'ac-btn-disabled' }
     //+ 未报名：报名中可报名，进行中/已结束不可操作
     if (status === '报名中') return { text: '立即报名', disabled: false, btnClass: 'ac-btn-signup' }
-    if (status === '进行中') return { text: '已开始，无法报名', disabled: true, btnClass: 'ac-btn-disabled' }
+    if (status === '进行中') return { text: '已开始', disabled: true, btnClass: 'ac-btn-disabled' }
     return { text: '已结束', disabled: true, btnClass: 'ac-btn-disabled' }
   }
 
@@ -147,11 +160,6 @@ const ActivityDetail = () => {
       }
     }
   }
-
-  //+ 关注/取关发起人（统一走 profile/toggleProfileFollow，POST /personal/follow/{id}）
-  //+ Activity.leader 无 isFollowed 字段，用本地 state 管理
-  const [leaderFollowed, setLeaderFollowed] = useState(false)
-  const [followLoading, setFollowLoading] = useState(false)
 
   //+ 删除确认弹窗控制
   const [deleteVisible, setDeleteVisible] = useState(false)

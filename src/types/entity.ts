@@ -188,6 +188,7 @@ export interface Activity {
     avatar: string
     //+ 领队个性签名（详情接口返回，可能很长，前端用 Ellipsis 截断）
     bio?: string
+  
   }
   title: string
   coverImg: string
@@ -205,6 +206,8 @@ export interface Activity {
   //+ 活动状态：报名中/进行中/已结束（详情接口需展示状态标签）
   activityStatus?: string
   joined: boolean
+  //+ 是否已关注该活动（详情接口返回）
+  isFollowed?: boolean
   members?: {
     id: string
     nickname: string

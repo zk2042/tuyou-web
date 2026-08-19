@@ -1,10 +1,17 @@
 //+ 用户资料卡弹窗样式
 //+ 居中弹窗，宽度自适应；头像/昵称/统计/关注按钮居中布局
 //+ 背景图作为顶部装饰条，下方圆形头像半悬浮其上
-
+.comment-section .nut-popup{
+  background-color: transparent;
+      max-width: none;
+      width: 80%;
+   
+      max-height:none;
+      
+}
 .user-card-modal {
-  width: 80vw;
-  max-width: 360px;
+  width: 100%;
+
   background-color: #fff;
   border-radius: 0.6rem;
   padding-bottom: 1rem;
@@ -15,7 +22,7 @@
 //+ 背景图
 .user-card-bg {
   width: 100%;
-  height: 6rem;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background-color: #f5f6f7;
 
@@ -112,9 +119,18 @@
   border-radius: 1.6rem;
   font-size: 0.7rem;
 
+  //+ 未关注（primary）：绿色主色
   &.nut-button-primary {
     background-color: #2e7d32;
     border-color: #2e7d32;
+    color: #fff;
+  }
+
+  //+ 已关注（default）：灰色描边 + 灰色文字
+  &.nut-button-default {
+    background-color: #f3f4f6;
+    border-color: #f3f4f6;
+    color: #a3abc0;
   }
 }
 
@@ -135,8 +151,5 @@
 
 //+ 平板和 PC 端的媒体查询
 @media screen and (min-width: 768px) {
-  .user-card-modal {
-    width: 60vw;
-    max-width: 420px;
-  }
+
 }
