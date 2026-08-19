@@ -30,7 +30,7 @@ const ActivityDetail = () => {
   useAuthGuard()
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
-  const { currentActivity, detailLoading, signupLoading } = useSelector(
+  const { currentActivity, detailLoading, signupLoading, participants } = useSelector(
     (state: RootState) => state.activity
   )
 
@@ -451,15 +451,19 @@ const ActivityDetail = () => {
         onClose={handleCloseCard}
       />
 
-      {/* 报名人列表弹窗：仅领队本人可查看（含手机号明文） */}
+      {/* 报名人列表弹窗：仅领队本人可查看 */}
+      {/* 数据优先级：store.participants（来自"我发布的"列表，含手机号）> currentActivity.members（详情接口，无手机号） */}
       <ParticipantsModal
         visible={participantsVisible}
-        participants={currentActivity.members?.map(m => ({
-          id: m.id,
-          avatar: m.avatar,
-          nickname: m.nickname,
-          phone: undefined,
-        })) || []}
+        participants={participants.length > 0
+          ? participants
+          : currentActivity.members?.map(m => ({
+              id: m.id,
+              avatar: m.avatar,
+              nickname: m.nickname,
+              phone: undefined,
+            })) || []
+        }
         maxPeople={currentActivity.maxPeople}
         onClose={() => setParticipantsVisible(false)}
         onUserClick={handleOpenCard}

@@ -10,6 +10,7 @@ import HeaderNavBar from '@/components/HeaderNavBar'
 import ActivityCard from '@/components/ActivityCard'
 import { usePagedList } from '@/hooks/usePagedList'
 import { fetchPublishActivity, fetchJoinActivity } from '@/store/modules/profile'
+import { setParticipants } from '@/store/modules/activity'
 import type { ActivityListItem, PageResult } from '@/types'
 import type { AppDispatch } from '@/store'
 import { useAuthGuard } from '@/components/AuthRoute'
@@ -79,7 +80,11 @@ const MyActivity = () => {
   }
 
   //+ 点击卡片：跳转详情
+  //+ "我发布的" Tab：将 participants 暂存到 store，详情页 ParticipantsModal 可用（含手机号）
   const handleCardClick = (activity: ActivityListItem) => {
+    if (activeTab === 0 && activity.participants) {
+      dispatch(setParticipants(activity.participants))
+    }
     Taro.navigateTo({ url: `/pages/ActivityDetail/index?id=${activity.id}` })
   }
 
@@ -123,7 +128,7 @@ const MyActivity = () => {
                 onClick={handleCardClick}
                 onSignup={handleSignup}
                 //+ "我发布的" Tab 显示报名人预览（后端返回 participants 时渲染）
-                showParticipants={activeTab === 0}
+               
               />
             ))
           )}

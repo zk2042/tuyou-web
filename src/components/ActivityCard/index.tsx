@@ -98,7 +98,7 @@ const DISABLED_TOAST: Record<SignupBtnKind, string> = {
   activity_cancel: '活动已取消',
 }
 
-const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup, showParticipants }: ActivityCardProps) => {
+const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityCardProps) => {
   const {
     coverImg,
     title,
@@ -109,7 +109,7 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup, showPartici
     maxPeople,
     price,
     activityStatus,
-    participants,
+   
   } = activity
 
   //+ 报名进度百分比（兜底除零）
@@ -181,17 +181,7 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup, showPartici
           <div className="progress-inner" style={{ width: `${percent}%` }} />
         </div>
 
-        {/* 报名人预览：仅"我发布的"场景且后端返回 participants 时渲染 */}
-        {showParticipants && participants && participants.length > 0 && (
-          <div className="participants-preview">
-            <div className="participants-avatars">
-              {participants.slice(0, 5).map((p) => (
-                <Avatar key={p.id} url={p.avatar} size="small" />
-              ))}
-            </div>
-            <span className="participants-count">共 {participants.length} 人</span>
-          </div>
-        )}
+       
 
         {/* 领队 + 报名按钮 */}
         <div className="progress-footer">

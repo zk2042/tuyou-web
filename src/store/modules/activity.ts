@@ -11,7 +11,7 @@ import {
   toggleActivitySignupAPI,
   deleteActivityAPI
 } from '@/apis/activity'
-import type { Activity, ActivityBanner, ActivityListItem } from '@/types'
+import type { Activity, ActivityBanner, ActivityListItem, Participant } from '@/types'
 
 //+ 活动状态接口
 export interface ActivityState {
@@ -39,6 +39,10 @@ export interface ActivityState {
   detailLoading: boolean
   //+ 报名操作进行中（防止重复点击）
   signupLoading: boolean
+  //+ 报名人列表（从"我发布的"列表项 participants 暂存，详情页 ParticipantsModal 使用）
+  //+ 来源：GET /personal/publish-activity 返回的 ActivityListItem.participants（含手机号）
+  //+ 详情接口 GET /activities/{id} 不返回该字段，仅当从"我发布的"跳转时有值
+  participants: Participant[]
 }
 
 //+ 初始状态
@@ -54,7 +58,8 @@ const initialState: ActivityState = {
   error: null,
   currentActivity: null,
   detailLoading: false,
-  signupLoading: false
+  signupLoading: false,
+  participants: []
 }
 
 //+ 获取活动Banner异步Action
@@ -176,6 +181,11 @@ const activitySlice = createSlice({
     clearCurrentActivity(state) {
       state.currentActivity = null
       state.detailLoading = false
+      state.participants = []
+    },
+    //+ 暂存报名人列表（从"我发布的"列表项跳转详情前调用）
+    setParticipants(state, action: { payload: Participant[] }) {
+      state.participants = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -281,7 +291,7 @@ const activitySlice = createSlice({
 })
 
 //+ 导出Action
-export const { setCategory, setDate, resetActivityList, clearCurrentActivity } = activitySlice.actions
+export const { setCategory, setDate, resetActivityList, clearCurrentActivity, setParticipants } = activitySlice.actions
 
 //+ 导出Reducer
 export default activitySlice.reducer

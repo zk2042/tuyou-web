@@ -76,12 +76,14 @@ function genUser(id: number, isFollowed: boolean) {
 }
 
 //+ 生成活动列表项
-function genActivity(id: number, joined: boolean) {
+//+ isPublish=true 时为"我发布的"活动，附带 participants（含手机号，仅领队可见）
+function genActivity(id: number, joined: boolean, isPublish = false) {
   const titles = ['武功山两日徒步', '青海湖骑行活动', '千岛湖露营聚会', '哈巴雪山攀登', '城市夜跑团']
   const addresses = ['江西萍乡', '青海海北', '浙江淳安', '云南迪庆', '杭州西湖']
   const difficulties = ['简单', '中等', '困难']
   const statuses = ['报名中', '进行中', '已结束']
-  return {
+  const currentPeople = 5 + (id * 3) % 15
+  const result: any = {
     id: String(id),
     leader: { ...me },
     title: titles[id % titles.length],
@@ -93,11 +95,22 @@ function genActivity(id: number, joined: boolean) {
     signUpEnd: '2026-08-13 08:00:00',
     price: 200 + (id * 50) % 300,
     maxPeople: 20,
-    currentPeople: 5 + (id * 3) % 15,
+    currentPeople,
     difficulty: difficulties[id % difficulties.length],
     activityStatus: statuses[id % statuses.length],
-    joined
+    joined,
+    isOwner: true
   }
+  //+ "我发布的"活动附带报名人列表（含手机号明文，仅领队可见）
+  if (isPublish) {
+    result.participants = Array.from({ length: currentPeople }, (_, i) => ({
+      id: String(i + 1),
+      nickname: `报名玩家${i + 1}`,
+      avatar: `https://picsum.photos/seed/participant-${id}-${i + 1}/100/100`,
+      phone: `138${String(10000000 + i + id * 1000).slice(0, 8)}`
+    }))
+  }
+  return result
 }
 
 //+ 批量生成各列表数据（数量与接口文档示例 total 对齐，便于验证分页）
@@ -109,7 +122,7 @@ const mockFavoriteNotes = Array.from({ length: 8 }, (_, i) => genPost(i + 1, 'no
 const mockFavoriteStrategys = Array.from({ length: 5 }, (_, i) => genPost(i + 1, 'strategy'))
 const mockLikedNotes = Array.from({ length: 28 }, (_, i) => genPost(i + 1, 'note'))
 const mockLikedStrategys = Array.from({ length: 12 }, (_, i) => genPost(i + 1, 'strategy'))
-const mockPublishActivity = Array.from({ length: 5 }, (_, i) => genActivity(i + 1, true))
+const mockPublishActivity = Array.from({ length: 5 }, (_, i) => genActivity(i + 1, true, true))
 const mockJoinActivity = Array.from({ length: 3 }, (_, i) => genActivity(i + 1, true))
 
 //+ 分页读取辅助：从 data 取 page/size，返回标准分页响应
