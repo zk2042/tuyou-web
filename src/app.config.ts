@@ -31,7 +31,6 @@ export default defineAppConfig({
     'pages/ChangePhone/index',
     'pages/CancelAccount/index',
     'pages/Search/index',
-    'pages/ActivityCalendar/index',
 
   ],
   window: {

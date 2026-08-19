@@ -52,6 +52,7 @@ const Settings = () => {
   //+ 开关切换
   const handleSwitchChange = (key: string, value: boolean) => {
     setSwitchState(prev => ({ ...prev, [key]: value }))
+    Taro.showToast({ title: '功能开发中', icon: 'none' })
     //+ 后期对接接口
     console.log(`[Settings] ${key} switched to ${value}`)
   }
@@ -60,6 +61,7 @@ const Settings = () => {
   const handleNavigate = (item: typeof navigateItems[0]) => {
     if (item.path) {
       Taro.navigateTo({ url: item.path })
+
     } else {
       Taro.showToast({ title: '功能开发中', icon: 'none' })
     }

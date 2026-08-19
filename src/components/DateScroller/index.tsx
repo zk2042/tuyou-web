@@ -88,7 +88,7 @@ const DateScroller = ({
               {d.isToday ? '今天' : d.isTomorrow ? '明天' : `周${d.weekday}`}
             </span>
             <span className='date-item-day'>{d.day}</span>
-            <span className='date-item-month'>{d.date.slice(5, 7)}月</span>
+            {/* <span className='date-item-month'>{d.date.slice(5, 7)}月</span> */}
           </div>
         ))}
       </div>

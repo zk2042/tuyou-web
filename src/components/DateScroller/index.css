@@ -1,0 +1,78 @@
+.date-scroller {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #f0f0f0;
+}
+.date-scroller-list {
+  flex: 1;
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0 0.4rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.date-scroller-list::-webkit-scrollbar {
+  display: none;
+}
+.date-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 2rem;
+  height: 2.3rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.date-item:active {
+  background-color: rgba(46, 125, 50, 0.08);
+}
+.date-item-weekday {
+  font-size: 0.55rem;
+  color: #909399;
+  font-weight: 500;
+}
+.date-item-day {
+  font-size: 0.8rem;
+  color: #1a1a1a;
+  font-weight: 550;
+  line-height: 1.1;
+}
+.date-item-month {
+  font-size: 0.5rem;
+  color: #c0c4cc;
+}
+.date-item-active {
+  background-color: #2e7d32;
+}
+.date-item-active .date-item-weekday,
+.date-item-active .date-item-day,
+.date-item-active .date-item-month {
+  color: #fff;
+}
+.date-item-active:active {
+  background-color: #2e7d32;
+}
+.date-scroller-calendar-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -15px 0 15px rgba(46, 125, 50, 0.2);
+}
+.date-scroller-calendar-btn .calendar-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #2e7d32;
+}
+.date-scroller-calendar-btn:active {
+  opacity: 0.7;
+}

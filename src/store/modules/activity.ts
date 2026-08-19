@@ -2,7 +2,7 @@
 //+ 状态规划：列表数据、分页、筛选分类、加载状态归 Store 管理（跨页面共享 + 筛选联动）
 //+ 详情数据、报名状态归 Store 管理（详情页与可能的其他页面共享）
 //+ 页面内纯 UI 状态（如滚动位置）不进 Store
-//+ Mock 降级：由 utils/request.ts 统一处理，响应数据中 __fromMock 标记来源
+//+ Mock 降级：由 utils/request.ts 统一处理，响应数据中 __fromMock 标记数据来源
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import {
   getActivityBannersAPI,
@@ -25,6 +25,8 @@ export interface ActivityState {
   totalPage: number
   //+ 当前筛选分类（'全部' = 不传 category）
   category: string
+  //+ 当前筛选日期 YYYY-MM-DD，空字符串=不过滤日期
+  date: string
   //+ 首次/刷新加载状态
   loading: boolean
   //+ 加载更多状态
@@ -46,6 +48,7 @@ const initialState: ActivityState = {
   page: 1,
   totalPage: 1,
   category: '全部',
+  date: '',
   loading: false,
   loadingMore: false,
   error: null,
@@ -74,15 +77,17 @@ export const fetchBanners = createAsyncThunk(
 //+ 获取活动列表异步Action
 //+ Mock 降级由 request.ts 自动处理，成功时直接返回数据
 //+ loadMore=true 时为加载更多（追加），否则为刷新/切换分类（替换）
+//+ category / date 为筛选条件，空字符串=不过滤
 export const fetchActivities = createAsyncThunk(
   'activity/fetchActivities',
   async (
-    params: { category?: string; page: number; size: number; loadMore?: boolean },
+    params: { category?: string; date?: string; page: number; size: number; loadMore?: boolean },
     { rejectWithValue }
   ) => {
     try {
       const res = await getActivityListAPI({
         category: params.category,
+        date: params.date,
         page: params.page,
         size: params.size,
       })
@@ -155,6 +160,10 @@ const activitySlice = createSlice({
     //+ 设置筛选分类（切换分类时调用）
     setCategory(state, action: { payload: string }) {
       state.category = action.payload
+    },
+    //+ 设置筛选日期（YYYY-MM-DD，空字符串=清除日期筛选）
+    setDate(state, action: { payload: string }) {
+      state.date = action.payload
     },
     //+ 重置列表（离开页面或手动刷新时调用）
     resetActivityList(state) {
@@ -272,7 +281,7 @@ const activitySlice = createSlice({
 })
 
 //+ 导出Action
-export const { setCategory, resetActivityList, clearCurrentActivity } = activitySlice.actions
+export const { setCategory, setDate, resetActivityList, clearCurrentActivity } = activitySlice.actions
 
 //+ 导出Reducer
 export default activitySlice.reducer

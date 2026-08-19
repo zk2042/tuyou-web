@@ -130,9 +130,23 @@
 
 //+ 平板适配
 @media screen and (min-width: 768px) {
-    .settings-content {
-        padding: 1rem 2rem;
-        max-width: 600px;
-        margin: 0 auto;
-    }
+    .nut-switch {
+            background-color: #2e7d32;
+            min-width: 1rem;
+    
+            .nut-switch-button {
+                width: 0.5rem;
+                height: 0.5rem;
+                border-radius: 0.5rem;
+            }
+        }
+    
+        .section-item .nut-switch-close {
+            background-color: #e9e9eb;
+    
+        }
+    
+        .nut-switch-button-open {
+            left: calc(100% - 0.5rem - var(--nut-switch-border-width));
+        }
 }
