@@ -11,7 +11,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '@/store'
 import { useEffect, useCallback, useState, useRef, useMemo } from 'react'
 import Taro from '@tarojs/taro'
+import { RichText } from '@tarojs/components'
 import { Dialog } from '@nutui/nutui-react'
+import { normalizeDetailHtml } from '@/utils/html'
 import { fetchGuideDetail, toggleLike as toggleGuideLike, toggleFavorite as toggleGuideFavorite, patchGuideDetail, deleteGuide } from '@/store/modules/guide'
 import { toggleProfileFollow } from '@/store/modules/profile'
 import { updateFeedItem } from '@/store/modules/home'
@@ -23,6 +25,7 @@ import {
 import { COMMENT_TARGET_TYPE } from '@/types'
 import { useAuthGuard } from '@/components/AuthRoute'
 import { useCommentPolling } from '@/hooks/useCommentPolling'
+import '@/components/MarkdownEditor/index.less'
 import './index.less'
 
 const GuideDetail = () => {
@@ -212,6 +215,10 @@ const GuideDetail = () => {
     () => (!!authorId && promiseRef.current.has(`follow:${authorId}`)) || !!followLoadingMap[authorId],
     [authorId, followLoadingMap]
   )
+
+  // Markdown 正文渲染
+  const contentHtml = useMemo(() => normalizeDetailHtml(guideDetail?.content), [guideDetail?.content])
+  const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
 
   //+ 点击关注按钮（本地回调）
   const handleFollowClick = () => {
@@ -482,8 +489,14 @@ const GuideDetail = () => {
             </div>
           )}
 
-          {/* 正文内容 */}
-          <p className="g-info-content">{guideDetail?.content}</p>
+          {/* 正文内容 - Markdown 渲染 */}
+          <div className="g-info-content md-content">
+            {isH5 ? (
+              <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+            ) : (
+              <RichText nodes={contentHtml} />
+            )}
+          </div>
 
           {/* 标签 */}
           <div className="g-info-tags">

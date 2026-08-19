@@ -9,6 +9,8 @@ import { Video } from '@tarojs/components'
 import { Button, TextArea, Input, Picker, Tabs } from '@nutui/nutui-react'
 import { IconFont } from '@nutui/icons-react'
 import HeaderNavBar from '@/components/HeaderNavBar'
+import RichEditor from '@/components/RichEditor'
+import { htmlToText, isHtmlEmpty } from '@/utils/html'
 import { createGuideAPI } from '@/apis/guide'
 import { uploadImagesAPI, uploadVideoAPI } from '@/apis/upload'
 import { fetchTags } from '@/store/modules/tag'
@@ -133,7 +135,13 @@ const PublishGuide = () => {
       const filePaths = chooseRes.tempFilePaths
       setUploading(true)
       const res = await uploadImagesAPI(filePaths, 'note', MAX_IMAGES)
-      const newUrls = res.data.urls || []
+      let newUrls:string[]=[]
+      if(res.data.urls.length > remaining){
+        newUrls = res.data.urls.slice(0, remaining)
+        Taro.showToast({ title: `最多上传${MAX_IMAGES}张图片`, icon: 'none' })
+      }else{
+         newUrls = res.data.urls || []
+      }
       if (newUrls.length > 0) {
         updateField('images', [...form.images, ...newUrls])
       }
@@ -252,7 +260,7 @@ const PublishGuide = () => {
       Taro.showToast({ title: '请填写交通方式', icon: 'none' })
       return false
     }
-    if (!form.guideContent.trim() || form.guideContent.length > MAX_CONTENT) {
+    if (isHtmlEmpty(form.guideContent) || htmlToText(form.guideContent).length > MAX_CONTENT) {
       Taro.showToast({ title: `请填写攻略内容（1-${MAX_CONTENT}字）`, icon: 'none' })
       return false
     }
@@ -421,7 +429,7 @@ const PublishGuide = () => {
             visible={categoryPickerVisible}
             title="选择分类"
             options={CATEGORY_OPTIONS}
-            value={form.category ? [String(form.category)] : []}
+            value={form.category ? [String(form.category)] : [String(CATEGORY_OPTIONS[0][0].value)]}
             onConfirm={handleCategoryConfirm}
             onCancel={() => setCategoryPickerVisible(false)}
             onClose={() => setCategoryPickerVisible(false)}
@@ -466,7 +474,7 @@ const PublishGuide = () => {
             visible={difficultyPickerVisible}
             title="选择难度"
             options={DIFFICULTY_OPTIONS}
-            value={form.difficulty ? [form.difficulty] : []}
+            value={form.difficulty ? [form.difficulty] : [String(DIFFICULTY_OPTIONS[0][0].value)]}
             onConfirm={handleDifficultyConfirm}
             onCancel={() => setDifficultyPickerVisible(false)}
             onClose={() => setDifficultyPickerVisible(false)}
@@ -485,20 +493,16 @@ const PublishGuide = () => {
           />
         </div>
 
-        {/* 攻略正文 */}
+        {/* 攻略正文（所见即所得富文本） */}
         <div className="field-section content column">
           <div className="field-label">
             攻略内容
-            <span className="field-count">{form.guideContent.length}/{MAX_CONTENT}</span>
           </div>
-          <TextArea
-            className="field-textarea"
-            placeholder="分享你的路线攻略..."
+          <RichEditor
             value={form.guideContent}
             onChange={(v) => updateField('guideContent', v)}
             maxLength={MAX_CONTENT}
-            rows={6}
-            showCount={false}
+            minHeight="400px"
           />
         </div>
 

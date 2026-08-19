@@ -1,0 +1,146 @@
+/* RichEditor 样式：复用 MarkdownEditor 通用类 + 富文本特有补充 */
+@import (reference) '@/components/MarkdownEditor/index.less';
+
+/* contentEditable 根节点：聚焦/失焦无轮廓，交互更自然 */
+.md-richtext-root {
+  -webkit-user-modify: read-write-plaintext-only;
+  outline: none;
+  cursor: text;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: default;
+
+  /* 让 <p>/<h1-6>/<ul>/<ol>/<blockquote>/<pre>/<table> 跟详情页一致的视觉 */
+  > :first-child { margin-top: 0; }
+  > :last-child  { margin-bottom: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 20px 0 10px;
+    font-weight: 700;
+    color: #0f1214;
+    line-height: 1.4;
+  }
+  h1 { font-size: 22px; padding-bottom: 8px; border-bottom: 1px solid #edf0f5; }
+  h2 { font-size: 19px; padding-bottom: 6px; border-bottom: 1px solid #f3f4f6; }
+  h3 { font-size: 17px; }
+  h4 { font-size: 16px; }
+  h5, h6 { font-size: 15px; color: #4b5563; }
+
+  p {
+    margin: 10px 0;
+    white-space: pre-wrap;
+    min-height: 1.75em;
+  }
+
+  strong, b { color: #0f1214; font-weight: 700; }
+  em, i { font-style: italic; color: #4b5563; }
+  u { text-decoration: underline; text-decoration-color: #2e7d32; }
+  del, s { color: #a3abc0; text-decoration: line-through; }
+
+  a {
+    color: #2e7d32;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+
+  code {
+    padding: 1px 6px;
+    background: #f3f4f6;
+    color: #d946ef;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+  }
+
+  pre {
+    margin: 12px 0;
+    padding: 12px 14px;
+    background: #1f2329;
+    color: #e5e7eb;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+      border-radius: 0;
+    }
+  }
+
+  blockquote {
+    margin: 12px 0;
+    padding: 8px 12px 8px 14px;
+    border-left: 3px solid #2e7d32;
+    background: #f2fbf3;
+    color: #4b5563;
+    border-radius: 0 6px 6px 0;
+
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+  }
+
+  ul, ol {
+    margin: 10px 0;
+    padding-left: 22px;
+
+    li {
+      margin: 4px 0;
+      line-height: 1.7;
+
+      > ul, > ol { margin: 4px 0; }
+    }
+  }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
+
+  hr {
+    margin: 18px 0;
+    border: none;
+    border-top: 1px solid #e5e6eb;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 8px 0;
+    display: block;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+
+    th, td {
+      border: 1px solid #e5e6eb;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      background: #f7f8fa;
+      font-weight: 600;
+      color: #0f1214;
+    }
+    tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+  }
+}
+
+/* 降级占位 */
+.md-editor-fallback {
+  box-sizing: border-box;
+  color: #a3abc0;
+  font-size: 13px;
+  background: #fff;
+  border: 1px dashed #e5e6eb;
+  border-radius: 8px;
+}

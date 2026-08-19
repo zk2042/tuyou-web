@@ -6,6 +6,9 @@
   padding-bottom: 60px;
   overflow: hidden;
 }
+.publish-activity-page .nut-button-primary {
+  background: #2e7d32;
+}
 .form-wrapper {
   flex: 1;
   display: flex;
@@ -75,7 +78,17 @@
   height: 4.2rem;
   line-height: 4rem;
 }
+.cover-upload .uploading-text {
+  text-align: center;
+  color: #999;
+  background-color: #f7f8fa;
+  width: 4.2rem;
+  height: 4.2rem;
+  line-height: 4rem;
+  font-size: 0.6rem;
+}
 .field-section {
+  border-bottom: 1px solid #e7e9ed9d;
   padding: 0.75rem 0 0.75rem 1.5rem;
   display: flex;
   flex-direction: row;
@@ -149,6 +162,15 @@
   height: 2.3rem;
   border-radius: 2.3rem;
   font-weight: 350;
+}
+.submit-bar .nut-button-primary {
+  background: #2e7d32;
+}
+.publish-activity-page .nut-picker-title {
+  font-weight: 500;
+}
+.publish-activity-page .nut-picker-confirm-btn {
+  color: #2e7d32;
 }
 @media screen and (min-width: 768px) {
   .submit-bar {

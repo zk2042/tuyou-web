@@ -1,0 +1,261 @@
+/* MarkdownEditor 组件样式
+ * 工具栏：灰底 + 边框按钮 + 点击绿色反馈
+ * TabBar：两栏切换，选中绿底白字
+ * 编辑/预览区：白底
+ * 字数统计：右下角灰色
+ */
+.md-editor {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e6eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.md-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #f7f8fa;
+  border-bottom: 1px solid #e5e6eb;
+
+  .md-tb-btn {
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid #d0d3da;
+    border-radius: 4px;
+    background: #fff;
+    color: #1f2329;
+    font-size: 13px;
+    line-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+
+    &:active {
+      background: #2e7d32;
+      color: #fff;
+      transform: scale(0.97);
+      border-color: #2e7d32;
+    }
+
+    &.md-tb-btn-disabled {
+      color: #a3abc0;
+      background: #f3f4f6;
+      border-color: #e5e6eb;
+      pointer-events: none;
+    }
+  }
+}
+
+.md-tabbar {
+  display: flex;
+  border-bottom: 1px solid #e5e6eb;
+  background: #fff;
+
+  .md-tab {
+    flex: 1;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    font-size: 14px;
+    color: #4b5563;
+    background: #f7f8fa;
+    user-select: none;
+
+    &.md-tab-active {
+      color: #fff;
+      background: #2e7d32;
+      font-weight: 600;
+    }
+  }
+}
+
+.md-edit-view {
+  width: 100%;
+  background: #fff;
+
+  .md-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1f2329;
+    background: #fff;
+
+    :global(.nut-textarea__textarea) {
+      width: 100%;
+      min-height: inherit !important;
+      padding: 0;
+    }
+  }
+}
+
+.md-preview {
+  width: 100%;
+  background: #fff;
+  box-sizing: border-box;
+  // 详情页复用此组件时需要的样式兜底：用户内容区宽度 100%
+  > :first-child {
+    margin-top: 0;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.md-wordcount {
+  text-align: right;
+  padding: 6px 16px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #a3abc0;
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ===== Markdown 正文样式（编辑器预览 & 详情页通用） =====
+   所有内容均带内联样式兜底，但此处做 H5 端的视觉增强；
+   小程序端主要依赖 inline styles，故这里保持 H5 与小程序观感一致。 */
+.md-content,
+.md-preview > div {
+  width: 100%;
+  color: #1f2329;
+  font-size: 15px;
+  line-height: 1.75;
+  word-break: break-word;
+  overflow-wrap: break-word;
+
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 20px 0 10px;
+    font-weight: 700;
+    color: #0f1214;
+    line-height: 1.4;
+  }
+  h1 { font-size: 22px; padding-bottom: 8px; border-bottom: 1px solid #edf0f5; }
+  h2 { font-size: 19px; padding-bottom: 6px; border-bottom: 1px solid #f3f4f6; }
+  h3 { font-size: 17px; }
+  h4 { font-size: 16px; }
+  h5, h6 { font-size: 15px; color: #4b5563; }
+
+  p {
+    margin: 10px 0;
+    white-space: pre-wrap;
+  }
+
+  strong, b { color: #0f1214; font-weight: 700; }
+  em, i { color: #4b5563; }
+  del { color: #a3abc0; text-decoration: line-through; }
+
+  a {
+    color: #2e7d32;
+    text-decoration: underline;
+    &:active { opacity: 0.8; }
+  }
+
+  code {
+    padding: 1px 6px;
+    background: #f3f4f6;
+    color: #d946ef;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+  }
+
+  pre {
+    margin: 12px 0;
+    padding: 12px 14px;
+    background: #1f2329;
+    color: #e5e7eb;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+
+    code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+      border-radius: 0;
+    }
+  }
+
+  blockquote {
+    margin: 12px 0;
+    padding: 8px 12px 8px 14px;
+    border-left: 3px solid #2e7d32;
+    background: #f2fbf3;
+    color: #4b5563;
+    border-radius: 0 6px 6px 0;
+
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+  }
+
+  ul, ol {
+    margin: 10px 0;
+    padding-left: 22px;
+
+    li {
+      margin: 4px 0;
+      line-height: 1.7;
+
+      > ul, > ol { margin: 4px 0; }
+    }
+  }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
+
+  hr {
+    margin: 18px 0;
+    border: none;
+    border-top: 1px solid #e5e6eb;
+  }
+
+  br {
+    content: '';
+    display: block;
+    height: 0;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 8px 0;
+    display: block;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+
+    th, td {
+      border: 1px solid #e5e6eb;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      background: #f7f8fa;
+      font-weight: 600;
+      color: #0f1214;
+    }
+    tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+  }
+}
+

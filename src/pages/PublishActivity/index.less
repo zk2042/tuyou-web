@@ -7,6 +7,10 @@
     //+ HeaderNavBar 用 fixed={false}，在文档流中占位，无需 padding-top
     padding-bottom: 60px; // 底部操作栏高度
     overflow: hidden;
+    //去除按钮红色闪动
+    .nut-button-primary{
+      background: #2e7d32;
+    }
 }
 
 .form-wrapper {
@@ -20,7 +24,7 @@
 //+ 封面图区域
 .cover-section {
   padding: 0.6rem 0.8rem;
-
+ 
   .upload-label {
     font-size: 0.75rem;
     font-weight: 600;
@@ -101,6 +105,7 @@
 
 //+ 通用字段区域
 .field-section {
+  border-bottom: 1px solid #e7e9ed9d;
   padding: 0.75rem 0 0.75rem 1.5rem;
   display: flex;
   flex-direction: row;
@@ -191,7 +196,19 @@
    border-radius: 2.3rem;
    font-weight: 350;
   }
+.nut-button-primary{
+  background: #2e7d32;
+  }
+}
+  //nutui相关组件
 
+  .publish-activity-page{
+    .nut-picker-title{
+      font-weight: 500;
+    }
+    .nut-picker-confirm-btn{
+      color: #2e7d32;
+    }
   }
 // 平板端适配
 @media screen and (min-width: 768px) {

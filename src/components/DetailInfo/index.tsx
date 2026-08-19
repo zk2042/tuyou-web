@@ -1,7 +1,12 @@
 //+ 详情页顶部信息组件（标题 + 作者 + 关注按钮 + 内容 + 标签 + 操作栏）
 //+ Q8：支持点赞/收藏/关注按钮回调（乐观更新由父组件控制 store）
+import { useMemo } from 'react'
+import Taro from '@tarojs/taro'
+import { RichText } from '@tarojs/components'
 import Avatar from '../Avatar'
 import Button from '../Button'
+import { normalizeDetailHtml } from '@/utils/html'
+import '@/components/MarkdownEditor/index.less'
 import './index.less'
 
 export interface DetailInfoActionProps {
@@ -47,6 +52,9 @@ const DetailInfo: React.FC<DetailInfoProps> = ({ detail, actions }) => {
   const nickname = author?.nickname || ''
   const avatarUrl = avatar || author?.avatar || ''
 
+  const contentHtml = useMemo(() => normalizeDetailHtml(content), [content])
+  const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
+
   
 
   // 关注
@@ -84,10 +92,14 @@ const DetailInfo: React.FC<DetailInfoProps> = ({ detail, actions }) => {
           />
         )}
       </div>
-      {/* 内容 */}
-      <p className="info-content">
-        {content}
-      </p>
+      {/* 内容 - Markdown 渲染 */}
+      <div className="info-content md-content">
+        {isH5 ? (
+          <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+        ) : (
+          <RichText nodes={contentHtml} />
+        )}
+      </div>
       {/* 标签 */}
       <div className="info-tags">
         {tags?.map((tag: string) => (

@@ -3,8 +3,9 @@
 //+ HeaderNavBar + 封面图 + 标签标题 + 信息面板 + 发起人 + 活动介绍 + 成员列表 + 底部操作栏
 //+ 报名/取消报名：文档8.1节要求取消确认弹窗，直接操作 + Toast 提示
 //+ 标签使用习惯：NutUI 组件优先（Button/Tag），其余用原生 HTML 标签（div/img/span）
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
+import { RichText } from '@tarojs/components'
 import { Tag as NutuiTag, Dialog ,Ellipsis} from '@nutui/nutui-react'
 import Tag from '@/components/Tag'
 import Button from '@/components/Button'
@@ -22,6 +23,8 @@ import Avatar from '@/components/Avatar'
 import UserCardModal from '@/components/UserCardModal'
 import ParticipantsModal from '@/components/ParticipantsModal'
 import { useAuthGuard } from '@/components/AuthRoute'
+import { normalizeDetailHtml } from '@/utils/html'
+import '@/components/MarkdownEditor/index.less'
 import './index.less'
 
 
@@ -183,6 +186,10 @@ const ActivityDetail = () => {
     if (!currentActivity?.isOwner) return
     setParticipantsVisible(true)
   }
+
+  // Markdown 正文渲染
+  const contentHtml = useMemo(() => normalizeDetailHtml(currentActivity?.activityContent), [currentActivity?.activityContent])
+  const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
 
   const handleFollow = async () => {
     const leaderId = currentActivity?.leader?.id
@@ -375,10 +382,12 @@ const ActivityDetail = () => {
         {/* 活动介绍 */}
         <div className='intro-section'>
           <span className='section-title'>活动介绍</span>
-          <div className='intro-content'>
-            {currentActivity.activityContent.split('\n').map((line, i) => (
-              <div key={i} className='intro-line'>{line || ' '}</div>
-            ))}
+          <div className='intro-content md-content'>
+            {isH5 ? (
+              <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+            ) : (
+              <RichText nodes={contentHtml} />
+            )}
           </div>
         </div>
 

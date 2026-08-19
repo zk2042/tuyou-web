@@ -9,6 +9,8 @@ import { Video } from '@tarojs/components'
 import { Button, TextArea, Input, Picker, Tabs } from '@nutui/nutui-react'
 import { IconFont } from '@nutui/icons-react'
 import HeaderNavBar from '@/components/HeaderNavBar'
+import RichEditor from '@/components/RichEditor'
+import { htmlToText, isHtmlEmpty } from '@/utils/html'
 import { createNoteAPI } from '@/apis/note'
 import { fetchTags } from '@/store/modules/tag'
 import {
@@ -104,7 +106,12 @@ const PublishNote = () => {
   //+ 批量图片上传成功 → 合并到 form.images
   useEffect(() => {
     if (uploadState.imagesStatus === 'success' && uploadState.lastImageUrls.length > 0) {
-      updateField('images', [...form.images, ...uploadState.lastImageUrls])
+      let newImages = [...form.images, ...uploadState.lastImageUrls]
+      if(newImages.length>MAX_IMAGES){
+        Taro.showToast({ title: `最多上传${MAX_IMAGES}张图片`, icon: 'none' })
+        newImages=newImages.slice(0,MAX_IMAGES)
+      }
+      updateField('images', newImages)
       const failCount = lastImageChooseCountRef.current - uploadState.lastImageUrls.length
       if (failCount > 0) {
         Taro.showToast({ title: `${failCount}张上传失败`, icon: 'none' })
@@ -227,11 +234,11 @@ const PublishNote = () => {
         return false
       }
     }
-    if (form.noteContent.length > MAX_CONTENT) {
+    if (htmlToText(form.noteContent).length > MAX_CONTENT) {
       Taro.showToast({ title: `内容不能超过${MAX_CONTENT}字`, icon: 'none' })
       return false
     }
-    if (!form.noteContent.trim()) {
+    if (isHtmlEmpty(form.noteContent)) {
       Taro.showToast({ title: '请输入笔记内容', icon: 'none' })
       return false
     }
@@ -404,7 +411,7 @@ const PublishNote = () => {
             visible={categoryPickerVisible}
             title="选择分类"
             options={CATEGORY_OPTIONS}
-            value={form.category ? [String(form.category)] : []}
+            value={form.category ? [String(form.category)] : [String(CATEGORY_OPTIONS[0][0].value)]}
             onConfirm={handleCategoryConfirm}
             onCancel={() => setCategoryPickerVisible(false)}
             onClose={() => setCategoryPickerVisible(false)}
@@ -413,20 +420,16 @@ const PublishNote = () => {
 
 
 
-        {/* 笔记内容 */}
+        {/* 笔记内容（所见即所得富文本） */}
         <div className="field-section content column">
           <div className="field-label">
             笔记内容
-            <span className="field-count">{form.noteContent.length}/{MAX_CONTENT}</span>
           </div>
-          <TextArea
-            className="field-textarea"
-            placeholder="分享你的户外经历、攻略心得..."
+          <RichEditor
             value={form.noteContent}
             onChange={(v) => updateField('noteContent', v)}
             maxLength={MAX_CONTENT}
-            rows={6}
-            showCount={false}
+            minHeight="400px"
           />
         </div>
 

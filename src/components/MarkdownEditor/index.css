@@ -1,0 +1,31 @@
+.md-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #f7f8fa;
+  border-bottom: 1px solid #e5e6eb;
+}
+.md-toolbar .md-tb-btn {
+  min-width: 36px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #d0d3da;
+  border-radius: 4px;
+  background: #fff;
+  color: #1f2329;
+  font-size: 13px;
+  line-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.md-toolbar .md-tb-btn:active {
+  background: #2e7d32;
+  color: #fff;
+  transform: scale(0.97);
+}
+.md-toolbar .md-tb-btn.md-tb-btn-disabled {
+  color: #a3abc0;
+  background: #f3f4f6;
+}

@@ -7,8 +7,10 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Taro, { useDidHide } from '@tarojs/taro'
 import { Button, TextArea, Input, Picker, DatePicker } from '@nutui/nutui-react'
-import { IconFont } from '@nutui/icons-react'
+import { Category, IconFont } from '@nutui/icons-react'
 import HeaderNavBar from '@/components/HeaderNavBar'
+import RichEditor from '@/components/RichEditor'
+import { htmlToText, isHtmlEmpty } from '@/utils/html'
 import { createActivityAPI } from '@/apis/activity'
 import {
   uploadImage,
@@ -219,11 +221,11 @@ const PublishActivity = () => {
       Taro.showToast({ title: '请选择难度等级', icon: 'none' })
       return false
     }
-    if (form.activityContent.length > 2000) {
+    if (htmlToText(form.activityContent).length > 2000) {
       Taro.showToast({ title: '活动介绍不能超过2000字', icon: 'none' })
       return false
     }
-    if (!form.activityContent.trim()) {
+    if (isHtmlEmpty(form.activityContent)) {
       Taro.showToast({ title: '请输入活动介绍', icon: 'none' })
       return false
     }
@@ -342,7 +344,7 @@ const PublishActivity = () => {
             visible={typePickerVisible}
             title="选择活动类型"
             options={typePickerOptions}
-            value={form.category ? [form.category] : []}
+            value={form.category ? [form.category] : [TYPE_OPTIONS[0]]}
             onConfirm={handleTypeConfirm}
             onCancel={() => setTypePickerVisible(false)}
             onClose={() => setTypePickerVisible(false)}
@@ -434,27 +436,23 @@ const PublishActivity = () => {
             visible={difficultyPickerVisible}
             title="选择难度等级"
             options={difficultyPickerOptions}
-            value={form.difficulty ? [form.difficulty] : []}
+            value={form.difficulty ? [form.difficulty] : [String(difficultyPickerOptions[0][0].value)]}
             onConfirm={handleDifficultyConfirm}
             onCancel={() => setDifficultyPickerVisible(false)}
             onClose={() => setDifficultyPickerVisible(false)}
           />
         </div>
 
-        {/* 活动介绍 */}
+        {/* 活动介绍（所见即所得富文本） */}
         <div className="field-section column">
           <div className="field-label">
             活动介绍
-            <span className="field-count">{form.activityContent.length}/2000</span>
           </div>
-          <TextArea
-            className="field-textarea"
-            placeholder="介绍活动内容、行程安排、注意事项等"
+          <RichEditor
             value={form.activityContent}
             onChange={(v) => updateField('activityContent', v)}
             maxLength={2000}
-            rows={6}
-            showCount={false}
+            minHeight="400px"
           />
         </div>
          {/* 底部固定提交按钮 */}
