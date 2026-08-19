@@ -252,12 +252,15 @@ export interface ActivityListItem {
 //+ 一级评论：replyToId=null，replyToName=null，可能有 replies 数组（二级评论）
 //+ 二级评论：replyToId 指向父评论 id；若回复另一个二级评论则 replyToName 为被回复人昵称（渲染"A @ B"格式）
 //+ canDelete：由后端结合"评论本人/内容作者"权限返回
+//+ member.status：评论人账号状态（后端可能返回，0=禁用 2=已注销），用于在昵称右侧渲染角标
 export interface Comment {
   id: string
   member: {
     id: string
     nickname: string
     avatar: string
+    //+ 账号状态：后端可能返回，未返回时为 undefined（按正常处理）
+    status?: UserStatus
   }
   content: string
   likeCount: number

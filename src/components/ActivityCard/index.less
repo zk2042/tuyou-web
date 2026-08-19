@@ -111,7 +111,33 @@ color: #666;
       background: #2e7d32;
       border-radius: 0.1rem;
       transition: width 0.3s;
-      
+
+    }
+  }
+
+  //+ 报名人预览：头像横向叠放 + 总数
+  .participants-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+
+    .participants-avatars {
+      display: flex;
+      //+ 头像横向叠放（后一个覆盖前一个边缘）
+      > * {
+        margin-left: -0.3rem;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        &:first-child {
+          margin-left: 0;
+        }
+      }
+    }
+
+    .participants-count {
+      font-size: 0.55rem;
+      color: #666;
     }
   }
 

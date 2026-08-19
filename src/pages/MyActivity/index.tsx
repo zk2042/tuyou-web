@@ -122,6 +122,8 @@ const MyActivity = () => {
                 activity={item}
                 onClick={handleCardClick}
                 onSignup={handleSignup}
+                //+ "我发布的" Tab 显示报名人预览（后端返回 participants 时渲染）
+                showParticipants={activeTab === 0}
               />
             ))
           )}

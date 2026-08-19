@@ -16,6 +16,17 @@ export const randomDate = (daysAgo: number = 30): string => {
   return date.toISOString().slice(0, 16).replace('T', ' ')
 }
 
+//+ 生成未来范围内的随机日期字符串（格式：YYYY-MM-DD HH:mm）
+//+ daysAhead=未来天数范围，0=今天，用于活动日历搜索 Mock 数据
+export const randomFutureDate = (daysAhead: number = 30): string => {
+  const days = randomInt(0, daysAhead)
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  date.setHours(randomInt(6, 22))
+  date.setMinutes(randomInt(0, 59))
+  return date.toISOString().slice(0, 16).replace('T', ' ')
+}
+
 //+ 生成分页响应数据
 export const createPageResponse = <T>(items: T[], page: number, size: number) => {
   const total = items.length

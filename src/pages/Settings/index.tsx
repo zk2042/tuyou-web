@@ -20,18 +20,21 @@ const switchItems = [
 
 //+ 跳转项配置
 //+ 编辑资料与个人中心统一使用 EditProfile 页面和 PUT /personal 接口
+//+ 修改密码 / 修改手机号 / 注销账号 为新增账号管理入口
 const navigateItems = [
   { key: 'editUserInfo', label: '编辑资料', path: '/pages/EditProfile/index',icon:'icon-bianjiziliao' },
+  { key: 'changePassword', label: '修改密码', path: '/pages/ChangePassword/index',icon:'icon-bianjiziliao' },
+  { key: 'changePhone', label: '修改手机号', path: '/pages/ChangePhone/index',icon:'icon-bianjiziliao' },
   { key: 'privacy', label: '隐私设置', path: '' ,icon:'icon-yinsishezhi'},
   { key: 'help', label: '帮助与反馈', path: '',icon:'icon-bangzhuyufankui' },
   { key: 'about', label: '关于途友', path: '',icon:'icon-guanyu' },
 ]
 
 //+ 底部按钮配置
+//+ 注销账号改为跳转 CancelAccount 页面（原 Toast 占位删除）
 const bottomButtons = [
   { key: 'logout', label: '退出登录', type: 'warning' },
-  { key: 'forgot', label: '忘记密码', type: 'default' },
-  { key: 'delete', label: '注销账号', type: 'danger' },
+  { key: 'cancelAccount', label: '注销账号', type: 'danger' },
 ]
 
 const Settings = () => {
@@ -66,6 +69,9 @@ const Settings = () => {
   const handleBottomClick = (item: typeof bottomButtons[0]) => {
     if (item.key === 'logout') {
       setLogoutVisible(true)
+    } else if (item.key === 'cancelAccount') {
+      //+ 注销账号：跳转独立页面完成手机号验证码 + 密码双重校验
+      Taro.navigateTo({ url: '/pages/CancelAccount/index' })
     } else {
       Taro.showToast({ title: '功能开发中', icon: 'none' })
     }

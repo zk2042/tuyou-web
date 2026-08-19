@@ -6,6 +6,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Loading, Empty } from '@nutui/nutui-react'
+import { Clock } from '@nutui/icons-react'
 import type { RootState, AppDispatch } from '@/store'
 import { fetchActivities, setCategory } from '@/store/modules/activity'
 import SearchBar from '@/components/SearchBar'
@@ -103,6 +104,11 @@ const Activity = () => {
     Taro.navigateTo({ url: `/pages/ActivityDetail/index?id=${activity.id}` })
   }
 
+  //+ 点击日历图标：跳转活动日历搜索页
+  const handleOpenCalendar = () => {
+    Taro.navigateTo({ url: '/pages/ActivityCalendar/index' })
+  }
+
   //+ 页面再次显示时刷新列表（文档4.2节方案一：从详情页返回时同步报名状态）
   useDidShow(() => {
     //+ 仅在已有数据时刷新，保留当前筛选条件和页码
@@ -113,9 +119,13 @@ const Activity = () => {
 
   return (
     <div className="activity-page">
-      {/* 顶部导航：SearchBar（含"途友"标题 + 搜索 + 头像） */}
+      {/* 顶部导航：SearchBar（含"途友"标题 + 搜索 + 头像） + 日历入口 */}
       <div className="activity-header">
         <SearchBar />
+        {/* 日历搜索入口：点击跳转活动日历搜索页 */}
+        <div className='calendar-entry' onClick={handleOpenCalendar}>
+          <Clock className='calendar-entry-icon' />
+        </div>
       </div>
       {/* 分类筛选栏：横向滚动，圆形图标 + 分类名 */}
         <div className="category-bar">

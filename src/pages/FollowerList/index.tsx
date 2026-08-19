@@ -1,11 +1,12 @@
 //+ FollowerList 粉丝列表页（结构与关注列表一致）
 //+ 接入 fetchFansList thunk，分页、上拉加载、下拉刷新，关注按钮对接 toggleFollowAPI
 //+ 性能优化：列表项拆 UserListItem 子组件 + React.memo + useToggleAction（请求锁+abort+冷却+按钮loading）
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro'
 import HeaderNavBar from '@/components/HeaderNavBar'
 import UserListItem from '@/components/UserListItem'
+import UserCardModal from '@/components/UserCardModal'
 import { usePagedList } from '@/hooks/usePagedList'
 import { useToggleAction } from '@/hooks/useToggleAction'
 import { fetchFansList } from '@/store/modules/profile'
@@ -112,9 +113,16 @@ const FollowerList = () => {
     }
   }, [paged, toggle])
 
-  //+ 点击用户项：跳转个人主页（暂未开发）
+  //+ 点击用户项：弹出资料卡
+  const [cardUserId, setCardUserId] = useState<string | null>(null)
+  const [cardVisible, setCardVisible] = useState(false)
   const handleUserClick = useCallback((user: UserPublic) => {
-    Taro.showToast({ title: `查看 ${user.nickname}`, icon: 'none' })
+    setCardUserId(user.id)
+    setCardVisible(true)
+  }, [])
+  const handleCloseCard = useCallback(() => {
+    setCardVisible(false)
+    setCardUserId(null)
   }, [])
 
   const { list, loading, hasMore } = paged
@@ -132,6 +140,7 @@ const FollowerList = () => {
               key={user.id}
               user={user}
               loading={isLoading(`follow:${user.id}`)}
+              followText='回关'
               onToggleFollow={handleToggleFollow}
               onUserClick={handleUserClick}
             />
@@ -148,6 +157,13 @@ const FollowerList = () => {
           <div className='no-more'>已加载全部</div>
         )}
       </div>
+
+      {/* 用户资料卡弹窗 */}
+      <UserCardModal
+        visible={cardVisible}
+        userId={cardUserId}
+        onClose={handleCloseCard}
+      />
     </div>
   )
 }

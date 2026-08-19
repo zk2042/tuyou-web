@@ -3,6 +3,7 @@
 //+ 复用 auth-form-item / auth-input 全局样式，与 CodeInput 视觉一致
 //+ 由父组件通过 value/onChange 受控管理用户输入值，captchaImage/loading/refresh 由 useCaptcha 提供
 import { Input } from '@nutui/nutui-react'
+import './index.less'
 
 interface CaptchaInputProps {
   //+ 用户输入的图形验证码值

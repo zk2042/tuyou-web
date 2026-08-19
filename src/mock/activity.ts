@@ -1,6 +1,6 @@
 //+ 活动模块Mock数据和路由
 //+ 用户分两类：mockUsers=会员，mockLeaders=领队
-import { randomInt, randomItem, randomDate, createPageResponse, successResponse, errorResponse } from './utils'
+import { randomInt, randomItem, randomDate, randomFutureDate, createPageResponse, successResponse, errorResponse } from './utils'
 import { mockUsers, mockLeaders } from './user'
 
 //+ 活动Banner数据
@@ -100,8 +100,9 @@ function generateActivity(id: number) {
     category: type,
     address: randomItem(addresses),
     activityContent: `这是一个关于${type}的精彩活动，欢迎大家报名参加！`,
-    startTime: randomDate(14),
-    endTime: randomDate(7),
+    //+ startTime 用未来日期（0-14天），便于活动日历搜索页按日期筛选
+    startTime: randomFutureDate(14),
+    endTime: randomFutureDate(7),
     signUpStart: randomDate(30),
     signUpEnd: randomDate(1),
     maxPeople: randomInt(10, 30),
@@ -133,7 +134,7 @@ export const activityMockRoutes: Record<string, (data?: any, url?: string) => an
   //+ 获取首页活动Banner
   'GET /api/v1/activities/banners': () => successResponse(mockBanners),
 
-  //+ 获取活动列表（与 OpenAPI 对齐：按 category 筛选）
+  //+ 获取活动列表（与 OpenAPI 对齐：按 category / date 筛选）
   'GET /api/v1/activities': (data) => {
     const page = Number(data?.page) || 1
     const size = Number(data?.size) || 10
@@ -144,6 +145,15 @@ export const activityMockRoutes: Record<string, (data?: any, url?: string) => an
     const category = data?.category
     if (category && category !== '全部') {
       filteredActivities = filteredActivities.filter(a => a.category === category)
+    }
+
+    //+ 根据日期筛选：传 date(YYYY-MM-DD) 时按 startTime 的日期部分匹配
+    const date = data?.date
+    if (date) {
+      filteredActivities = filteredActivities.filter(a => {
+        //+ startTime 格式 "YYYY-MM-DD HH:mm"，取前10位与 date 比较
+        return a.startTime && a.startTime.slice(0, 10) === date
+      })
     }
 
     return successResponse(createPageResponse(filteredActivities, page, size))

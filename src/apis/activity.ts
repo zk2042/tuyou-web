@@ -9,8 +9,10 @@ export function getActivityBannersAPI() {
 
 //+ 获取活动列表
 //+ category 不传=全部，传中文字符串（徒步/露营/骑行/登山/跑步/攀岩/溯溪）
+//+ date 不传=全部日期，传 YYYY-MM-DD 按活动开始日期筛选
 export function getActivityListAPI(params: {
   category?: string
+  date?: string
   page: number
   size: number
 }) {

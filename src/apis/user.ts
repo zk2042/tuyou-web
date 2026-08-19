@@ -36,13 +36,16 @@ export function registerAPI(params: {
 }
 
 //+ 登录请求（支持密码登录和验证码登录）
-//+ type 为 "password" 时需传 password
-//+ type 为 "code" 时需传 code
+//+ type 为 "password" 时需传 password + captchaId + captchaCode（图形验证码）
+//+ type 为 "code" 时需传 code（短信验证码，无需图形验证码）
 export function loginAPI(params: {
   phone: string
   password?: string
   code?: string
   type?: 'password' | 'code'
+  //+ 密码登录需回传图形验证码 ID 与用户输入值（来自 GET /auth/captcha）
+  captcha_id?: string
+  captcha?: string
 }) {
   return post('/auth/login', params)
 }

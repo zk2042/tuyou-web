@@ -36,9 +36,13 @@ const initialState: UserState = {
 }
 
 //+ 发送验证码异步Action
+//+ scene 支持：register/login/reset-pwd/change-phone/cancel-account
 export const fetchSendCode = createAsyncThunk(
   'user/fetchSendCode',
-  async (params: { phone: string; scene: 'register' | 'login' | 'reset-pwd' }, { rejectWithValue }) => {
+  async (params: {
+    phone: string
+    scene: 'register' | 'login' | 'reset-pwd' | 'change-phone' | 'cancel-account'
+  }, { rejectWithValue }) => {
     try {
       const res = await sendCodeAPI(params)
       if (res.code === 0 || res.code === 200) {
@@ -54,9 +58,17 @@ export const fetchSendCode = createAsyncThunk(
 )
 
 //+ 登录异步Action（支持密码登录和验证码登录）
+//+ 密码登录：需带 captchaId + captchaCode（图形验证码）；验证码登录：仅带短信 code
 export const fetchLogin = createAsyncThunk(
   'user/fetchLogin',
-  async (params: { phone: string; password?: string; code?: string; type?: 'password' | 'code' }, { rejectWithValue }) => {
+  async (params: {
+    phone: string
+    password?: string
+    code?: string
+    type?: 'password' | 'code'
+    captcha_id?: string
+    captcha?: string
+  }, { rejectWithValue }) => {
     try {
       const res = await loginAPI(params)
 

@@ -18,6 +18,8 @@ import {
 import { toggleProfileFollow } from '@/store/modules/profile'
 import HeaderNavBar from '@/components/HeaderNavBar'
 import Avatar from '@/components/Avatar'
+import UserCardModal from '@/components/UserCardModal'
+import ParticipantsModal from '@/components/ParticipantsModal'
 import { useAuthGuard } from '@/components/AuthRoute'
 import './index.less'
 
@@ -153,6 +155,25 @@ const ActivityDetail = () => {
   //+ 删除确认弹窗控制
   const [deleteVisible, setDeleteVisible] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+
+  //+ 用户资料卡弹窗：点击发起人头像 / 成员头像弹出
+  const [cardUserId, setCardUserId] = useState<string | null>(null)
+  const [cardVisible, setCardVisible] = useState(false)
+  const handleOpenCard = (userId: string) => {
+    setCardUserId(userId)
+    setCardVisible(true)
+  }
+  const handleCloseCard = () => {
+    setCardVisible(false)
+    setCardUserId(null)
+  }
+
+  //+ 报名人列表弹窗：仅领队本人（isOwner）查看
+  const [participantsVisible, setParticipantsVisible] = useState(false)
+  const handleOpenParticipants = () => {
+    if (!currentActivity?.isOwner) return
+    setParticipantsVisible(true)
+  }
 
   const handleFollow = async () => {
     const leaderId = currentActivity?.leader?.id
@@ -319,8 +340,10 @@ const ActivityDetail = () => {
                 <div className='leader-section'>
                   <span className='section-title'>发起人</span>
                   <div className='leader-card'>
-                    <Avatar url={currentActivity.leader.avatar} size='40px' />
-                    <div className='leader-info'>
+                    <div onClick={() => handleOpenCard(currentActivity.leader.id)}>
+                      <Avatar url={currentActivity.leader.avatar} size='40px' />
+                    </div>
+                    <div className='leader-info' onClick={() => handleOpenCard(currentActivity.leader.id)}>
                       <span className='leader-name'>{currentActivity.leader.nickname}</span>
                       {/* 领队个性签名：bio 可能很长，用 Ellipsis 单行截断；为空显示占位 */}
                       <Ellipsis
@@ -347,12 +370,19 @@ const ActivityDetail = () => {
         <div className='members-section'>
           <span className='section-title'>
             已报名（{currentActivity.currentPeople}人）
+            {/* 领队本人可点击查看完整报名人列表（含手机号） */}
+            {currentActivity.isOwner && (
+              <span className='view-participants-btn' onClick={handleOpenParticipants}>查看报名人</span>
+            )}
           </span>
           <div className='members-list'>
             {(currentActivity.members || []).map((m) => (
-              <div key={m.id} className='member-item'>
+              <div
+                key={m.id}
+                className='member-item'
+                onClick={() => handleOpenCard(m.id)}
+              >
                 <Avatar url={m.avatar} size='24px' />
-                
               </div>
             ))}
           </div>
@@ -396,6 +426,27 @@ const ActivityDetail = () => {
         // confirmLoading={deleteLoading}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteVisible(false)}
+      />
+
+      {/* 用户资料卡弹窗：点击发起人头像 / 成员头像 */}
+      <UserCardModal
+        visible={cardVisible}
+        userId={cardUserId}
+        onClose={handleCloseCard}
+      />
+
+      {/* 报名人列表弹窗：仅领队本人可查看（含手机号明文） */}
+      <ParticipantsModal
+        visible={participantsVisible}
+        participants={currentActivity.members?.map(m => ({
+          id: m.id,
+          avatar: m.avatar,
+          nickname: m.nickname,
+          phone: undefined,
+        })) || []}
+        maxPeople={currentActivity.maxPeople}
+        onClose={() => setParticipantsVisible(false)}
+        onUserClick={handleOpenCard}
       />
     </div>
   )

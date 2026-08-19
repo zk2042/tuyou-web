@@ -5,6 +5,7 @@
 import { memo } from 'react'
 import { Button, Ellipsis } from '@nutui/nutui-react'
 import Avatar from '@/components/Avatar'
+import StatusBadge from '@/components/StatusBadge'
 import type { UserPublic } from '@/types'
 
 interface UserListItemProps {
@@ -20,26 +21,33 @@ interface UserListItemProps {
 }
 
 const UserListItem = memo(({ user, loading, followText = '回关', onToggleFollow, onUserClick }: UserListItemProps) => {
+  //+ status=2（已注销）：隐藏关注按钮
+  const isCancelled = user.status === 2
   return (
     <div className='user-item' onClick={() => onUserClick(user)}>
       <Avatar url={user.avatar} size='35' />
       <div className='user-info'>
-        <Ellipsis className='user-nickname' content={user.nickname} rows={1} />
+        <div className='user-nickname-row'>
+          <Ellipsis className='user-nickname' content={user.nickname} rows={1} />
+          <StatusBadge status={user.status} size='small' />
+        </div>
         <Ellipsis className='user-bio' content={user.bio} rows={1} />
       </div>
-      <Button
-        className={`follow-btn ${user.isFollowed ? 'followed' : ''}`}
-        type={user.isFollowed ? 'default' : 'primary'}
-        size='small'
-        loading={loading}
-        disabled={loading}
-        onClick={(ev) => {
-          ev.stopPropagation()
-          onToggleFollow(user.id, !!user.isFollowed)
-        }}
-      >
-        {user.isFollowed ? '已关注' : followText}
-      </Button>
+      {!isCancelled && (
+        <Button
+          className={`follow-btn ${user.isFollowed ? 'followed' : ''}`}
+          type={user.isFollowed ? 'default' : 'primary'}
+          size='small'
+          loading={loading}
+          disabled={loading}
+          onClick={(ev) => {
+            ev.stopPropagation()
+            onToggleFollow(user.id, !!user.isFollowed)
+          }}
+        >
+          {user.isFollowed ? '已关注' : followText}
+        </Button>
+      )}
     </div>
   )
 })

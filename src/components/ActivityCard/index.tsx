@@ -28,6 +28,8 @@ interface ActivityCardProps {
   onSignup?: (activity: ActivityListItem) => void
   //+ 点击"取消报名"回调（父级负责弹出确认框 → 调接口）
   onCancelSignup?: (activity: ActivityListItem) => void
+  //+ 是否显示报名人预览（"我发布的"场景传 true，后端返回 participants 时渲染头像列表）
+  showParticipants?: boolean
 }
 
 //+ 状态标签颜色映射
@@ -96,7 +98,7 @@ const DISABLED_TOAST: Record<SignupBtnKind, string> = {
   activity_cancel: '活动已取消',
 }
 
-const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityCardProps) => {
+const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup, showParticipants }: ActivityCardProps) => {
   const {
     coverImg,
     title,
@@ -107,6 +109,7 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityC
     maxPeople,
     price,
     activityStatus,
+    participants,
   } = activity
 
   //+ 报名进度百分比（兜底除零）
@@ -177,6 +180,18 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityC
         <div className="progress-bar">
           <div className="progress-inner" style={{ width: `${percent}%` }} />
         </div>
+
+        {/* 报名人预览：仅"我发布的"场景且后端返回 participants 时渲染 */}
+        {showParticipants && participants && participants.length > 0 && (
+          <div className="participants-preview">
+            <div className="participants-avatars">
+              {participants.slice(0, 5).map((p) => (
+                <Avatar key={p.id} url={p.avatar} size="small" />
+              ))}
+            </div>
+            <span className="participants-count">共 {participants.length} 人</span>
+          </div>
+        )}
 
         {/* 领队 + 报名按钮 */}
         <div className="progress-footer">

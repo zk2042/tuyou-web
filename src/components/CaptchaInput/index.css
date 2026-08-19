@@ -1,0 +1,45 @@
+.auth-form-item-captcha {
+  position: relative;
+}
+.auth-form-item-captcha .auth-input-captcha {
+  padding-right: 4.5rem !important;
+}
+.captcha-image-btn {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 4.6vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background-color: #f5f6f7;
+}
+.captcha-image-btn--loading {
+  cursor: wait;
+}
+.captcha-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.3rem;
+}
+.captcha-loading-text {
+  font-size: 0.55rem;
+  color: #909399;
+  white-space: nowrap;
+}
+@media screen and (min-width: 768px) {
+  .captcha-image-btn {
+    height: 4vh;
+    width: 3rem;
+  }
+  .captcha-loading-text {
+    font-size: 0.5rem;
+  }
+}

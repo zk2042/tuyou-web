@@ -27,7 +27,11 @@ export default defineAppConfig({
     'pages/Favorite/index',
     'pages/Like/index',
     'pages/Settings/index',
+    'pages/ChangePassword/index',
+    'pages/ChangePhone/index',
+    'pages/CancelAccount/index',
     'pages/Search/index',
+    'pages/ActivityCalendar/index',
 
   ],
   window: {

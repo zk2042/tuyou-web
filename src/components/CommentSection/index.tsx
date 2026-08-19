@@ -11,6 +11,8 @@ import { ArrowDown, ArrowUp } from '@nutui/icons-react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
 import Avatar from '@/components/Avatar'
+import StatusBadge from '@/components/StatusBadge'
+import UserCardModal from '@/components/UserCardModal'
 import type { Comment } from '@/types/entity'
 import './index.less'
 
@@ -118,6 +120,18 @@ const CommentSection = (props: CommentSectionProps) => {
     /** 父评论 id，若为一级评论则 null */
     parentId: string | null
   } | null>(null)
+
+  //+ 用户资料卡弹窗：点击评论人头像弹出
+  const [cardUserId, setCardUserId] = useState<string | null>(null)
+  const [cardVisible, setCardVisible] = useState(false)
+  const handleOpenCard = useCallback((userId: string) => {
+    setCardUserId(userId)
+    setCardVisible(true)
+  }, [])
+  const handleCloseCard = useCallback(() => {
+    setCardVisible(false)
+    setCardUserId(null)
+  }, [])
 
   // ---------- 派生 ----------
   //+ 评论总数：优先用后端返回的 totalComments（含二级回复），降级用已加载数据累加
@@ -234,10 +248,12 @@ const CommentSection = (props: CommentSectionProps) => {
   // ---------- 渲染：单条评论（一级/二级共用，通过 level 控制缩进/昵称格式）----------
   const renderComment = (c: Comment, level: 1 | 2, parentId: string | null) => {
     //+ 二级评论昵称格式：A @ B（replyToName 存在时）
+    //+ 昵称右侧统一渲染状态角标（status=0/2 时显示，正常时不渲染）
     const nicknameRender = level === 2
       ? (
           <div className='comment-nickname'>
             <span className='nickname-self'>{c.member.nickname}</span>
+            <StatusBadge status={c.member.status} size='small' />
             {c.replyToName && (
               <>
                 <span className='nickname-at'>  </span>
@@ -246,7 +262,12 @@ const CommentSection = (props: CommentSectionProps) => {
             )}
           </div>
         )
-      : <div className='comment-nickname'>{c.member.nickname}</div>
+      : (
+          <div className='comment-nickname'>
+            {c.member.nickname}
+            <StatusBadge status={c.member.status} size='small' />
+          </div>
+        )
 
     return (
       <View
@@ -254,8 +275,8 @@ const CommentSection = (props: CommentSectionProps) => {
         className={`comment-item comment-level-${level}`}
         onLongPress={() => handleLongPress(c, parentId)}
       >
-        {/* 头像 */}
-        <div className='comment-avatar'>
+        {/* 头像：点击弹出用户资料卡 */}
+        <div className='comment-avatar' onClick={() => handleOpenCard(c.member.id)}>
           <Avatar url={c.member.avatar} size='32' />
         </div>
 
@@ -379,6 +400,13 @@ const CommentSection = (props: CommentSectionProps) => {
           </div>
         </div>
       )}
+
+      {/* 用户资料卡弹窗：点击评论人头像 */}
+      <UserCardModal
+        visible={cardVisible}
+        userId={cardUserId}
+        onClose={handleCloseCard}
+      />
     </div>
   )
 }

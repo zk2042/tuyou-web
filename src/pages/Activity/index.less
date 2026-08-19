@@ -9,9 +9,36 @@
 
 //+ 顶部导航（固定在顶部）
 .activity-header {
- 
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
   background-color: #fff;
+  //+ SearchBar 占据剩余空间
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+//+ 日历搜索入口按钮
+.calendar-entry {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  .calendar-entry-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #2e7d32;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
 //+ 可滚动内容区（顶部留出 header 高度）

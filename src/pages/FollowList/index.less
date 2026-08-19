@@ -42,13 +42,21 @@
         align-items: flex-start;
         margin-left: 0.5rem;
         overflow: hidden;
-        
+
+        //+ 昵称行：容纳昵称 + 状态角标横向布局
+        .user-nickname-row {
+            display: flex;
+            align-items: center;
+            max-width: 100%;
+            min-width: 0;
+        }
 
         .user-nickname {
             font-size: 0.7rem;
             font-weight: 350;
             color: #272727;
             line-height: 1.4;
+            min-width: 0;
         }
 
         .user-bio {
