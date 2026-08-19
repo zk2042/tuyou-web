@@ -5,8 +5,9 @@
 //+ 标签使用习惯：NutUI 组件优先（Button/Tag），其余用原生 HTML 标签（div/img/span）
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
-import { Button, Tag as NutuiTag, Dialog ,Ellipsis} from '@nutui/nutui-react'
+import { Tag as NutuiTag, Dialog ,Ellipsis} from '@nutui/nutui-react'
 import Tag from '@/components/Tag'
+import Button from '@/components/Button'
 import { useSelector, useDispatch } from 'react-redux'
 import type { AppDispatch, RootState } from '@/store'
 import {
@@ -352,7 +353,14 @@ const ActivityDetail = () => {
                         rows={1}
                       />
                     </div>
-                    <Button onClick={handleFollow}>{leaderFollowed ? '已关注' : '+ 关注'}</Button>
+                    <Button
+                      content={leaderFollowed ? '已关注' : '+ 关注'}
+                      onClick={handleFollow}
+                      isFollowed={leaderFollowed}
+                      loading={followLoading}
+                      disabled={followLoading}
+                    />
+ 
                   </div>
                 </div>
 
