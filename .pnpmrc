@@ -1,0 +1,5 @@
+registry=https://registry.npmmirror.com
+auto-install-peers=true
+enable-pre-post-scripts=true
+# 逗号**不能有空格**
+allowed-dep-scripts=@react-spring/core,es5-ext
