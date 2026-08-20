@@ -22,6 +22,7 @@ import HeaderNavBar from '@/components/HeaderNavBar'
 import Avatar from '@/components/Avatar'
 import UserCardModal from '@/components/UserCardModal'
 import ParticipantsModal from '@/components/ParticipantsModal'
+import SharePoster from '@/components/SharePoster'
 import { useAuthGuard } from '@/components/AuthRoute'
 import { normalizeDetailHtml } from '@/utils/html'
 import '@/components/MarkdownEditor/index.less'
@@ -239,12 +240,24 @@ const ActivityDetail = () => {
     }
   }
 
-  //+ 头部 more 按钮点击：弹出 ActionSheet 选择删除
+  //+ 分享海报弹窗：仅领队(isOwner)可触发，从右上角"···" → 分享海报 进入
+  const [sharePosterVisible, setSharePosterVisible] = useState(false)
+  //+ 当前活动详情页完整 H5 链接（二维码扫码后跳转地址）
+  const shareUrl = useMemo(() => {
+    if (typeof window !== 'undefined' && window.location) {
+      return window.location.href
+    }
+    return ''
+  }, [])
+
+  //+ 头部 more 按钮点击：弹出 ActionSheet 选择 分享海报 / 删除活动
   const handleMoreClick = useCallback(() => {
     Taro.showActionSheet({
-      itemList: ['删除活动'],
+      itemList: ['分享海报', '删除活动'],
       success: (res) => {
         if (res.tapIndex === 0) {
+          setSharePosterVisible(true)
+        } else if (res.tapIndex === 1) {
           setDeleteVisible(true)
         }
       },
@@ -469,6 +482,15 @@ const ActivityDetail = () => {
         maxPeople={currentActivity.maxPeople}
         onClose={() => setParticipantsVisible(false)}
         onUserClick={handleOpenCard}
+      />
+
+      {/* 分享海报弹窗：仅领队(isOwner)通过右上角"··· → 分享海报"触发 */}
+      <SharePoster
+        visible={sharePosterVisible}
+        onClose={() => setSharePosterVisible(false)}
+        activityTitle={currentActivity.title}
+        activityCover={currentActivity.coverImg}
+        shareUrl={shareUrl}
       />
     </div>
   )

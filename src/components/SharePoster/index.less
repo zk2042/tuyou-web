@@ -1,0 +1,92 @@
+//+ 活动分享海报弹层样式
+.share-poster-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  width: 100%;
+
+}
+
+.share-poster-container {
+  position: relative;
+  width: 75%;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.share-poster-header {
+  flex-shrink: 0;
+  height: 48px;
+  padding: 0 16px;
+  background: #2e7d32;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.share-poster-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.share-poster-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.share-poster-body {
+  flex: 1;
+  aspect-ratio: 3/ 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 12px 0 16px;
+}
+
+.share-poster-img {
+  width: 90%;
+  display: block;
+  border-radius: 8px;
+  //+ 重要：让长按事件能触发浏览器保存菜单
+  -webkit-touch-callout: default;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.share-poster-tip {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #86909c;
+  text-align: center;
+}
+
+.share-poster-loading,
+.share-poster-error {
+  width: 100%;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #86909c;
+}
+
+.share-poster-error {
+  color: #f53f3f;
+}
