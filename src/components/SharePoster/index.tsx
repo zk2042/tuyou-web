@@ -35,38 +35,52 @@ const SharePoster: React.FC<SharePosterProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   //+ 加载图片用于 canvas 合成
-  //+ 方案：fetch 拿 blob URL → img 加载 blob URL（同源，不污染 canvas）
-  //+ 这样无需图片服务器返回 CORS 头，也能正常 toDataURL
-  //+ 兜底：fetch 失败时直接用原 URL + crossOrigin 加载（要求服务器支持 CORS）
-  const loadImage = useCallback((src: string): Promise<HTMLImageElement> => {
-    return new Promise(async (resolve, reject) => {
-      //+ 路径1：fetch 转 blob URL（推荐，绕过 canvas CORS 污染）
+  //+ 方案：fetch 拿 blob URL → img.decode() 等待真正解码 → 用于 drawImage
+  //+ 关键：移动端（iOS Safari/微信浏览器）img.onload 触发时图片可能还未解码完成，
+  //+       drawImage 会画不出来，必须用 img.decode() 等待解码完成
+  //+ blob URL 是同源的，不会污染 canvas，toDataURL 正常
+  const loadImage = useCallback(async (src: string): Promise<HTMLImageElement> => {
+    //+ 路径1：fetch 转 blob URL（推荐，绕过 canvas CORS 污染）
+    try {
+      const response = await fetch(src, { mode: 'cors' })
+      if (!response.ok) throw new Error(`fetch 状态码 ${response.status}`)
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
       try {
-        const response = await fetch(src, { mode: 'cors' })
-        if (!response.ok) throw new Error(`fetch ${response.status}`)
-        const blob = await response.blob()
-        const objectUrl = URL.createObjectURL(blob)
         const img = new Image()
-        img.onload = () => {
-          URL.revokeObjectURL(objectUrl)
-          resolve(img)
-        }
-        img.onerror = () => {
-          URL.revokeObjectURL(objectUrl)
-          reject(new Error('blob URL 加载失败'))
-        }
         img.src = objectUrl
-        return
-      } catch (err) {
-        //+ 路径2：fetch 失败兜底，直接用原 URL + crossOrigin 加载
-        //+ 要求图片服务器返回 Access-Control-Allow-Origin，否则会失败
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.onload = () => resolve(img)
-        img.onerror = () => reject(new Error('图片加载失败'))
-        img.src = src
+        //+ 关键：等待图片真正解码完成，避免移动端 drawImage 画不出来
+        if (typeof img.decode === 'function') {
+          await img.decode()
+        } else {
+          //+ 老浏览器降级到 onload
+          await new Promise((res, rej) => {
+            img.onload = () => res(img)
+            img.onerror = () => rej(new Error('图片加载失败'))
+          })
+        }
+        return img
+      } finally {
+        //+ 注意：decode 完成后才能 revoke，否则 drawImage 时图片可能被回收
+        //+ 这里延迟释放，等 canvas 合成完毕
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 5000)
       }
-    })
+    } catch (err: any) {
+      //+ 路径2：fetch 失败兜底，直接用原 URL + crossOrigin 加载
+      //+ 要求图片服务器返回 Access-Control-Allow-Origin
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.src = src
+      if (typeof img.decode === 'function') {
+        await img.decode()
+      } else {
+        await new Promise((res, rej) => {
+          img.onload = () => res(img)
+          img.onerror = () => rej(new Error('图片加载失败'))
+        })
+      }
+      return img
+    }
   }, [])
 
   //+ canvas 文字换行：超出宽度自动换行，返回行数组
@@ -117,30 +131,41 @@ const SharePoster: React.FC<SharePosterProps> = ({
       })
 
       //+ 2. 加载封面图 + 二维码图
-      const [coverImg, qrImg] = await Promise.all([
-        loadImage(activityCover).catch(() => null),
-        loadImage(qrDataUrl),
-      ])
+      //+ 容错：封面图加载失败不阻塞海报生成，背景留灰色，其他正常
+      let coverImg: HTMLImageElement | null = null
+      try {
+        coverImg = await loadImage(activityCover)
+      } catch (err: any) {
+        console.warn('[SharePoster] 封面图加载失败:', err?.message)
+      }
+      const qrImg = await loadImage(qrDataUrl)
 
       //+ 3. canvas 合成（750 x 1334，移动端海报标准比例）
+      //+ 注意：iOS Safari 对 canvas 内存量有上限（约 5MB / 16MB），
+      //+ 750x1334 × 4 bytes ≈ 4MB，安全；不要随意放大尺寸
       const canvas = canvasRef.current
       canvas.width = 750
       canvas.height = 1334
       const ctx = canvas.getContext('2d')
-      if (!ctx) throw new Error('canvas 不支持')
+      if (!ctx) throw new Error('canvas 2D context 不支持')
 
       //+ 背景图（封面图撑满，cover 模式）
       ctx.fillStyle = '#f5f5f5'
       ctx.fillRect(0, 0, 750, 1334)
       if (coverImg) {
-        const cw = coverImg.width
-        const ch = coverImg.height
-        const scale = Math.max(750 / cw, 700 / ch)
-        const dw = cw * scale
-        const dh = ch * scale
-        const dx = (750 - dw) / 2
-        const dy = 0
-        ctx.drawImage(coverImg, dx, dy, dw, dh)
+        try {
+          const cw = coverImg.width || 750
+          const ch = coverImg.height || 1334
+          const scale = Math.max(750 / cw, 700 / ch)
+          const dw = cw * scale
+          const dh = ch * scale
+          const dx = (750 - dw) / 2
+          const dy = 0
+          ctx.drawImage(coverImg, dx, dy, dw, dh)
+        } catch (err: any) {
+          //+ drawImage 失败兜底：背景留灰，不阻塞后续绘制
+          console.warn('[SharePoster] drawImage 封面图失败:', err?.message)
+        }
       }
 
       //+ 4. 底部白色信息卡（标题 + 二维码区域）
@@ -177,7 +202,16 @@ const SharePoster: React.FC<SharePosterProps> = ({
       ctx.fillText('途游 · 发现你的下一个活动', 40, qrY + qrSize - 30)
 
       //+ 9. 输出 base64
-      const dataUrl = canvas.toDataURL('image/png')
+      //+ 移动端 toDataURL 可能因内存压力失败，加 try
+      let dataUrl: string
+      try {
+        dataUrl = canvas.toDataURL('image/png')
+      } catch (err: any) {
+        throw new Error('图片导出失败：' + (err?.message || '未知错误'))
+      }
+      if (!dataUrl || dataUrl.length < 100) {
+        throw new Error('海报生成失败：导出图片为空')
+      }
       setPosterDataUrl(dataUrl)
     } catch (err: any) {
       console.error('[SharePoster] 生成失败:', err)

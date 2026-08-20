@@ -149,6 +149,25 @@ export function goToLogin(redirect?: string): Promise<TaroGeneral.CallbackResult
       Taro.removeStorageSync('login_redirect')
     }
   } catch (_) { /* ignore */ }
-  
+
   return routerRedirectTo('LOGIN')
+}
+
+//+ 操作级鉴权（用于"扫码进入详情页"场景）
+//+ 用法：在需要登录的操作前调用 requireAuth('报名')
+//+   - 已登录 → 返回 true，继续执行
+//+   - 未登录 → Toast 提示"请先登录后报名"，延迟 1.2s 后跳登录页，返回 false
+//+ 与 useAuthGuard 区别：useAuthGuard 是页面级（进入页面就跳），requireAuth 是操作级（浏览放行、操作拦截）
+export function requireAuth(action: string = '操作'): boolean {
+  if (isAuthenticated()) return true
+  Taro.showToast({
+    title: `请先登录后${action}`,
+    icon: 'none',
+    duration: 1500,
+  })
+  //+ 延迟跳转，让 Toast 先显示；保存当前页路径用于登录后回跳
+  setTimeout(() => {
+    goToLogin(getCurrentPageFullPath())
+  }, 1200)
+  return false
 }

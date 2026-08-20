@@ -25,7 +25,7 @@ import ParticipantsModal from '@/components/ParticipantsModal'
 //+ 懒加载 SharePoster：避免其静态依赖 qrcode 库未安装时拖垮整个 ActivityDetail
 //+ 仅在用户点击"分享海报"时才加载，未点击不会触发 qrcode 模块解析
 const SharePoster = lazy(() => import('@/components/SharePoster'))
-import { useAuthGuard } from '@/components/AuthRoute'
+import { requireAuth } from '@/router'
 import { normalizeDetailHtml } from '@/utils/html'
 import '@/components/MarkdownEditor/index.less'
 import './index.less'
@@ -33,7 +33,9 @@ import './index.less'
 
 
 const ActivityDetail = () => {
-  useAuthGuard()
+  //+ 扫码进入详情页场景：不强制登录，未登录也能浏览
+  //+ 操作（报名/关注/删除/分享等）前用 requireAuth 拦截，未登录时 Toast 提示并跳登录页
+  //+ useAuthGuard() 已移除
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { currentActivity, detailLoading, signupLoading, participants } = useSelector(
@@ -127,6 +129,8 @@ const ActivityDetail = () => {
     if (!currentActivity) return
     const config = getButtonConfig()
     if (config.disabled) return
+    //+ 非登录态拦截：扫码进入的未登录用户点击报名时提示并跳登录
+    if (!requireAuth('报名')) return
 
     const resKey = `signup:${activityId}`
     //+ 操作冷却
@@ -175,6 +179,8 @@ const ActivityDetail = () => {
   const [cardUserId, setCardUserId] = useState<string | null>(null)
   const [cardVisible, setCardVisible] = useState(false)
   const handleOpenCard = (userId: string) => {
+    //+ 非登录态拦截：扫码进入的未登录用户查看用户资料时提示并跳登录
+    if (!requireAuth('查看用户资料')) return
     setCardUserId(userId)
     setCardVisible(true)
   }
@@ -188,6 +194,8 @@ const ActivityDetail = () => {
   const [participantsVisible, setParticipantsVisible] = useState(false)
   const handleOpenParticipants = () => {
     if (!participants || participants.length === 0) return
+    //+ 非登录态拦截：扫码进入的未登录用户查看报名人时提示并跳登录
+    if (!requireAuth('查看报名人')) return
     setParticipantsVisible(true)
   }
 
@@ -198,6 +206,8 @@ const ActivityDetail = () => {
   const handleFollow = async () => {
     const leaderId = currentActivity?.leader?.id
     if (!leaderId || followLoading) return
+    //+ 非登录态拦截：扫码进入的未登录用户关注时提示并跳登录
+    if (!requireAuth('关注')) return
     const resKey = `follow:${leaderId}`
     //+ 操作冷却
     const cd = cooldownRef.current.get(resKey)
@@ -254,6 +264,8 @@ const ActivityDetail = () => {
 
   //+ 头部 more 按钮点击：弹出 ActionSheet 选择 分享海报 / 删除活动
   const handleMoreClick = useCallback(() => {
+    //+ 非登录态拦截：扫码进入的未登录用户点击右上角操作时提示并跳登录
+    if (!requireAuth('操作')) return
     Taro.showActionSheet({
       itemList: ['分享海报', '删除活动'],
       success: (res) => {

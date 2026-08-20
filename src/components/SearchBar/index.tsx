@@ -20,7 +20,7 @@ const SearchBar = () => {
 
   return (
     <div className="search-bar">
-      <Cell className="search-bar-left" title="途友" onClick={() => {}} />
+      <div className="search-bar-left">途友</div>
       {/* 外层可点击容器：保证整个搜索框区域点击都能跳转 */}
       <div className="search-bar-trigger" onClick={handleSearchClick}>
         <NutSearchBar
