@@ -39,10 +39,37 @@ const SharePoster: React.FC<SharePosterProps> = ({
   //+ 关键：移动端（iOS Safari/微信浏览器）img.onload 触发时图片可能还未解码完成，
   //+       drawImage 会画不出来，必须用 img.decode() 等待解码完成
   //+ blob URL 是同源的，不会污染 canvas，toDataURL 正常
+  //+ ⚠️ Chrome 缓存 bug：磁盘缓存的旧响应没有 CORS 头，crossOrigin='anonymous' 会直接报错
+  //+    修复：fetch 加 cache: 'no-store' 绕过磁盘缓存，每次发真正请求拿带 CORS 头的新响应
+  //+ ⚠️ data URL（二维码 base64）不能加时间戳查询参数，否则变成非法 URL
+  //+    data URL 本身没有 CORS/缓存问题，直接用 img 加载即可
   const loadImage = useCallback(async (src: string): Promise<HTMLImageElement> => {
-    //+ 路径1：fetch 转 blob URL（推荐，绕过 canvas CORS 污染）
+    //+ data URL（base64）直接走 img，不需要 fetch，也没有 CORS/缓存问题
+    if (/^data:/i.test(src)) {
+      const img = new Image()
+      img.src = src
+      if (typeof img.decode === 'function') {
+        await img.decode()
+      } else {
+        await new Promise((res, rej) => {
+          img.onload = () => res(img)
+          img.onerror = () => rej(new Error('图片加载失败'))
+        })
+      }
+      return img
+    }
+
+    //+ 路径1：fetch 转 blob URL（推荐，绕过 canvas CORS 污染 + 绕过 Chrome 脏缓存）
     try {
-      const response = await fetch(src, { mode: 'cors' })
+      //+ cache: 'no-store' 绕过磁盘缓存，避免旧响应无 CORS 头导致报错
+      //+ 同时给 URL 加时间戳参数，双保险破坏缓存命中
+      const cacheBuster = src.includes('?')
+        ? `${src}&_t=${Date.now()}`
+        : `${src}?_t=${Date.now()}`
+      const response = await fetch(cacheBuster, {
+        mode: 'cors',
+        cache: 'no-store',
+      })
       if (!response.ok) throw new Error(`fetch 状态码 ${response.status}`)
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
@@ -67,10 +94,13 @@ const SharePoster: React.FC<SharePosterProps> = ({
       }
     } catch (err: any) {
       //+ 路径2：fetch 失败兜底，直接用原 URL + crossOrigin 加载
-      //+ 要求图片服务器返回 Access-Control-Allow-Origin
+      //+ 同样加时间戳破坏 Chrome 缓存，避免脏缓存报错
+      const cacheBuster = src.includes('?')
+        ? `${src}&_t=${Date.now()}`
+        : `${src}?_t=${Date.now()}`
       const img = new Image()
       img.crossOrigin = 'anonymous'
-      img.src = src
+      img.src = cacheBuster
       if (typeof img.decode === 'function') {
         await img.decode()
       } else {
