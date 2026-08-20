@@ -7,4 +7,5 @@ allowBuilds:
   '@tarojs/cli': true
   core-js: true
   core-js-pure: true
+  es5-ext: set this to true or false
   esbuild: true

@@ -21,6 +21,9 @@ const ALLOWED_TAGS: Record<string, Record<string, (v: string) => string | false>
   strong: {}, b: {}, em: {}, i: {}, u: {}, del: {}, s: {},
   blockquote: {}, pre: {}, code: {}, hr: {}, span: {},
   ul: {}, ol: {}, li: {},
+  //+ div 仅作为兼容入口：Chrome contenteditable Enter 默认生成 <div>，
+  //+ sanitize 末尾会把 div 转成 p，统一段落语义
+  div: {},
   a: {
     href: (v: string) => {
       const s = String(v || '').trim()
@@ -146,6 +149,12 @@ export function sanitizeHtml(dirty: string): string {
     const attrsStr = attrs.length ? ' ' + attrs.join(' ') : ''
     return isSelfClose ? `<${name}${attrsStr} />` : `<${name}${attrsStr}>`
   })
+
+  //+ div → p 转换：Chrome contenteditable 的 Enter 默认生成 <div>，
+  //+ 统一转成 <p> 让渲染端 .md-content 的 p 样式生效，保留段落间距
+  s = s
+    .replace(/<div([^>]*)>/gi, '<p$1>')
+    .replace(/<\/\s*div\s*>/gi, '</p>')
 
   return s
 }

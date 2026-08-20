@@ -1,17 +1,95 @@
-/* RichEditor 样式：复用 MarkdownEditor 通用类 + 富文本特有补充 */
-@import (reference) '@/components/MarkdownEditor/index.less';
+@import '@/pages/variables.less';
 
-/* contentEditable 根节点：聚焦/失焦无轮廓，交互更自然 */
-.md-richtext-root {
-  -webkit-user-modify: read-write-plaintext-only;
-  outline: none;
-  cursor: text;
+//+ ===== wangEditor 富文本编辑器样式 =====
+
+//+ 编辑器容器
+.md-rich-editor {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  
+  width: 100%;
+  border-top: 1px solid #f0f0f0;
+}
+
+//+ ===== 自定义工具栏 =====
+.we-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #f5f5f5;
+  background: #eff6ff;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+//+ 工具栏按钮
+.we-tb-btn {
+  flex-shrink: 0;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #4a4a4a;
+  cursor: pointer;
+  border-radius: 0.3rem;
+  transition: background 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: default;
 
-  /* 让 <p>/<h1-6>/<ul>/<ol>/<blockquote>/<pre>/<table> 跟详情页一致的视觉 */
-  > :first-child { margin-top: 0; }
-  > :last-child  { margin-bottom: 0; }
+  //+ 点击瞬态
+  &:active {
+    background: #e8f5e9;
+    transform: scale(0.95);
+  }
+
+  //+ 激活态：当前选区已应用该格式
+  &.we-tb-active {
+    background: @theme-color;
+    color: #fff;
+  }
+}
+
+//+ ===== contenteditable 编辑区 =====
+//+ 字号/字重/间距与 .md-content 详情页保持一致，所见即所得
+.we-editor-area {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  outline: none;
+  border: none;
+  padding: 12px 16px;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #1f2329;
+  word-break: break-word;
+
+  //+ placeholder（空内容时显示）
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: #a3abc0;
+    font-style: normal;
+    pointer-events: none;
+  }
+
+  //+ 编辑区内段落/标题/列表等元素样式 —— 与 .md-content 对齐
+  p {
+    margin: 10px 0;
+    white-space: pre-wrap;
+    min-height: 1.75em;
+  }
 
   h1, h2, h3, h4, h5, h6 {
     margin: 20px 0 10px;
@@ -19,25 +97,39 @@
     color: #0f1214;
     line-height: 1.4;
   }
-  h1 { font-size: 22px; padding-bottom: 8px; border-bottom: 1px solid #edf0f5; }
-  h2 { font-size: 19px; padding-bottom: 6px; border-bottom: 1px solid #f3f4f6; }
-  h3 { font-size: 17px; }
-  h4 { font-size: 16px; }
-  h5, h6 { font-size: 15px; color: #4b5563; }
+  h1 { font-size: 48px; }
+  h2 { font-size: 36px; }
+  h3 { font-size: 24px; }
+  h4 { font-size: 22px; }
+  h5, h6 { font-size: 20px; color: #4b5563; }
 
-  p {
+  strong, b { font-weight: 700; color: #0f1214; }
+  em, i { font-style: italic; }
+  u { text-decoration: underline; }
+  del, s { text-decoration: line-through; color: #a3abc0; }
+
+  ul, ol {
     margin: 10px 0;
-    white-space: pre-wrap;
-    min-height: 1.75em;
+    padding-left: 22px;
+    li {
+      margin: 4px 0;
+      line-height: 1.7;
+    }
+  }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
+
+  blockquote {
+    margin: 12px 0;
+    padding: 8px 12px 8px 14px;
+    border-left: 3px solid @theme-color;
+    background: #f2fbf3;
+    color: #4b5563;
+    border-radius: 0 6px 6px 0;
   }
 
-  strong, b { color: #0f1214; font-weight: 700; }
-  em, i { font-style: italic; color: #4b5563; }
-  u { text-decoration: underline; text-decoration-color: #2e7d32; }
-  del, s { color: #a3abc0; text-decoration: line-through; }
-
   a {
-    color: #2e7d32;
+    color: @theme-color;
     text-decoration: underline;
     word-break: break-all;
   }
@@ -48,7 +140,7 @@
     color: #d946ef;
     border-radius: 4px;
     font-size: 13px;
-    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-family: Consolas, Monaco, monospace;
   }
 
   pre {
@@ -59,45 +151,14 @@
     border-radius: 8px;
     overflow-x: auto;
     font-size: 13px;
-    line-height: 1.6;
-    font-family: Consolas, Monaco, 'Courier New', monospace;
     white-space: pre-wrap;
     word-break: break-word;
-
     code {
       padding: 0;
       background: transparent;
       color: inherit;
-      font-size: inherit;
-      border-radius: 0;
     }
   }
-
-  blockquote {
-    margin: 12px 0;
-    padding: 8px 12px 8px 14px;
-    border-left: 3px solid #2e7d32;
-    background: #f2fbf3;
-    color: #4b5563;
-    border-radius: 0 6px 6px 0;
-
-    > :first-child { margin-top: 0; }
-    > :last-child { margin-bottom: 0; }
-  }
-
-  ul, ol {
-    margin: 10px 0;
-    padding-left: 22px;
-
-    li {
-      margin: 4px 0;
-      line-height: 1.7;
-
-      > ul, > ol { margin: 4px 0; }
-    }
-  }
-  ul { list-style: disc; }
-  ol { list-style: decimal; }
 
   hr {
     margin: 18px 0;
@@ -112,30 +173,20 @@
     margin: 8px 0;
     display: block;
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 12px 0;
-    font-size: 14px;
-
-    th, td {
-      border: 1px solid #e5e6eb;
-      padding: 8px 10px;
-      text-align: left;
-    }
-    th {
-      background: #f7f8fa;
-      font-weight: 600;
-      color: #0f1214;
-    }
-    tr:nth-child(even) td {
-      background: #fafbfc;
-    }
-  }
 }
 
-/* 降级占位 */
+//+ ===== 字数统计 =====
+.md-wordcount {
+  flex-shrink: 0;
+  text-align: right;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.55rem;
+  color: #999;
+ 
+  border-top: 1px solid #f5f5f5;
+}
+
+//+ ===== 降级占位 =====
 .md-editor-fallback {
   box-sizing: border-box;
   color: #a3abc0;
@@ -144,3 +195,114 @@
   border: 1px dashed #e5e6eb;
   border-radius: 8px;
 }
+
+//+ ===== 详情页正文渲染（.md-content 全局样式保留） =====
+//+ 详情页直接渲染 sanitize 后的 HTML，需要 .md-content 样式
+//+ 字号/字重与 .we-editor-area 编辑区保持一致，所见即所得
+.md-content {
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.75;
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 20px 0 10px;
+    font-weight: 700;
+    color: #0f1214;
+    line-height: 1.4;
+  }
+  h1 { font-size: 48px; }
+  h2 { font-size: 36px; }
+  h3 { font-size: 24px; }
+  h4 { font-size: 22px; }
+  h5, h6 { font-size: 20px; color: #4b5563; }
+
+  p {
+    margin: 10px 0;
+    white-space: pre-wrap;
+    min-height: 1.75em;
+  }
+
+  strong, b { font-weight: 700; color: #0f1214; }
+  em, i { font-style: italic; }
+  u { text-decoration: underline; }
+  del, s { text-decoration: line-through; color: #a3abc0; }
+
+  a {
+    color: @theme-color;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+
+  ul, ol {
+    margin: 10px 0;
+    padding-left: 22px;
+    li {
+      margin: 4px 0;
+      line-height: 1.7;
+    }
+  }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
+
+  blockquote {
+    margin: 12px 0;
+    padding: 8px 12px 8px 14px;
+    border-left: 3px solid @theme-color;
+    background: #f2fbf3;
+    color: #4b5563;
+    border-radius: 0 6px 6px 0;
+  }
+
+  code {
+    padding: 1px 6px;
+    background: #f3f4f6;
+    color: #d946ef;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: Consolas, Monaco, monospace;
+  }
+
+  pre {
+    margin: 12px 0;
+    padding: 12px 14px;
+    background: #1f2329;
+    color: #e5e7eb;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+  }
+
+  hr {
+    margin: 18px 0;
+    border: none;
+    border-top: 1px solid #e5e6eb;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 8px 0;
+    display: block;
+  }
+}
+
+// //+ ===== 响应式 =====
+// @media screen and (min-width: 768px) {
+//   .we-toolbar {
+//     padding: 0.4rem 1rem;
+//     gap: 0.2rem;
+//   }
+//   .we-tb-btn {
+//     min-width: 2rem;
+//     height: 2rem;
+//     font-size: 0.7rem;
+//   }
+// }

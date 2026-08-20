@@ -444,8 +444,8 @@ const PublishActivity = () => {
         </div>
 
         {/* 活动介绍（所见即所得富文本） */}
-        <div className="field-section column">
-          <div className="field-label">
+        <div className="field-section column activity-section">
+          <div className="field-label activity-title">
             活动介绍
           </div>
           <RichEditor

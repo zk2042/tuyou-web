@@ -494,8 +494,8 @@ const PublishGuide = () => {
         </div>
 
         {/* 攻略正文（所见即所得富文本） */}
-        <div className="field-section content column">
-          <div className="field-label">
+        <div className="field-section content column guide-section">
+          <div className="field-label guide-title">
             攻略内容
           </div>
           <RichEditor

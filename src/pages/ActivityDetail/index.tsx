@@ -180,10 +180,11 @@ const ActivityDetail = () => {
     setCardUserId(null)
   }
 
-  //+ 报名人列表弹窗：仅领队本人（isOwner）查看
+  //+ 报名人列表弹窗：仅从"我发布的活动"进入时可见（store 有 participants 数据）
+  //+ 不做兜底：首页/活动列表等入口进入时不展示查看报名人
   const [participantsVisible, setParticipantsVisible] = useState(false)
   const handleOpenParticipants = () => {
-    if (!currentActivity?.isOwner) return
+    if (!participants || participants.length === 0) return
     setParticipantsVisible(true)
   }
 
@@ -395,8 +396,8 @@ const ActivityDetail = () => {
         <div className='members-section'>
           <span className='section-title'>
             已报名（{currentActivity.currentPeople}人）
-            {/* 领队本人可点击查看完整报名人列表（含手机号） */}
-            {currentActivity.isOwner && (
+            {/* 仅从"我发布的活动"进入时可见（store 有 participants 数据），其他入口不展示 */}
+            {participants && participants.length > 0 && (
               <span className='view-participants-btn' onClick={handleOpenParticipants}>查看报名人</span>
             )}
           </span>
@@ -460,19 +461,11 @@ const ActivityDetail = () => {
         onClose={handleCloseCard}
       />
 
-      {/* 报名人列表弹窗：仅领队本人可查看 */}
-      {/* 数据优先级：store.participants（来自"我发布的"列表，含手机号）> currentActivity.members（详情接口，无手机号） */}
+      {/* 报名人列表弹窗：仅从"我发布的活动"进入时可见 */}
+      {/* 数据来源：store.participants（来自"我发布的"列表，含手机号）；不做兜底，其他入口不展示 */}
       <ParticipantsModal
         visible={participantsVisible}
-        participants={participants.length > 0
-          ? participants
-          : currentActivity.members?.map(m => ({
-              id: m.id,
-              avatar: m.avatar,
-              nickname: m.nickname,
-              phone: undefined,
-            })) || []
-        }
+        participants={participants || []}
         maxPeople={currentActivity.maxPeople}
         onClose={() => setParticipantsVisible(false)}
         onUserClick={handleOpenCard}

@@ -421,8 +421,8 @@ const PublishNote = () => {
 
 
         {/* 笔记内容（所见即所得富文本） */}
-        <div className="field-section content column">
-          <div className="field-label">
+        <div className="field-section content column note-section">
+          <div className="field-label note-title">
             笔记内容
           </div>
           <RichEditor
