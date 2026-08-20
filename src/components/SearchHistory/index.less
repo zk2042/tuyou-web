@@ -1,0 +1,230 @@
+
+
+//+ ===== 搜索历史模块 =====
+.sh-wrap {
+  padding: 0.4rem 1.2rem 0.2rem;
+}
+
+//+ 第一行：标题 + 右侧操作
+.sh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+//+ 左上角标题：灰色细字体
+.sh-title {
+  font-size: 0.65rem;
+  font-weight: 450;
+  color: #999;
+}
+
+//+ 右侧操作区
+.sh-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+//+ 展开/收起 + 删除图标：灰色细字体
+.sh-toggle {
+  display: flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.sh-arrow-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  color: #999;
+  font-weight: 400;
+  margin-left: 0.1rem;
+}
+
+//+ 竖线分隔符
+.sh-divider {
+  font-size: 0.6rem;
+  color: #ccc;
+  margin: 0 0.4rem;
+  font-weight: 400;
+}
+
+//+ 删除图标（进入编辑模式入口）
+.sh-delete-icon {
+  cursor: pointer;
+  width: 0.6rem;
+    height: 0.6rem;
+    font-size: 0.6rem;
+    line-height: 0.6rem;
+    text-align: center;
+    color: #999;
+    font-weight: 400;
+  &:active { opacity: 0.6; }
+}
+
+
+
+//+ 编辑模式：全部清除
+.sh-clear-all {
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+//+ 编辑模式：完成（与左上角"历史记录"一致的灰色细字体）
+.sh-done {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+//+ ===== 历史词条网格：两列 =====
+.sh-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem 0.4rem;
+}
+
+.sh-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  color: #333;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.2s;
+  &:active {
+    background-color: #e5e7eb;
+  }
+}
+
+.sh-tag-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6rem;
+  color: #080808;
+}
+
+//+ 编辑模式：词条右侧叉号
+.sh-tag-del {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.2rem;
+  cursor: pointer;
+}
+
+.sh-tag-del-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  color: #7c7b7b;
+}
+
+//+ ===== 全部清除确认弹窗 =====
+.sh-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sh-modal-panel {
+  background-color: #fff;
+  border-radius: 0.6rem;
+ 
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: sh-slide-up 0.25s ease;
+}
+
+@keyframes sh-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.sh-modal-text {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #333;
+  text-align: center;
+  white-space: wrap;
+  line-height: 1.6;
+  padding: 0.8rem 1rem;
+}
+
+.sh-modal-actions {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  border-top: 1px solid #f0f0f0;
+  
+}
+
+//+ 取消：碳灰色细字体
+.sh-modal-cancel {
+  flex: 1;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #999;
+border-right: 1px solid #f0f0f0;
+  cursor: pointer;
+  padding: 0.8rem 0;
+  border-top: 1px solid #f0f0f0;
+  &:active { opacity: 0.6; }
+}
+
+//+ 删除：黑色细字体
+.sh-modal-delete {
+  flex: 1;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  padding: 0.8rem 0;
+  cursor: pointer;
+  border-top: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  &:active { opacity: 0.6; }
+}
+
+//+ ===== 响应式 =====
+@media screen and (min-width: 768px) {
+  .sh-wrap {
+    padding: 0.6rem 2rem 0.3rem;
+  }
+  .sh-title {
+    font-size: 0.7rem;
+  }
+  .sh-toggle, .sh-clear-all, .sh-divider {
+    font-size: 0.65rem;
+  }
+  .sh-done {
+    font-size: 0.7rem;
+  }
+  .sh-tag-text {
+    font-size: 0.65rem;
+  }
+}

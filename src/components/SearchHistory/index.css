@@ -1,0 +1,204 @@
+.sh-wrap {
+  padding: 0.4rem 1.2rem 0.2rem;
+}
+.sh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+.sh-title {
+  font-size: 0.65rem;
+  font-weight: 450;
+  color: #999;
+}
+.sh-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.sh-toggle {
+  display: flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+}
+.sh-toggle:active {
+  opacity: 0.6;
+}
+.sh-arrow-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  color: #999;
+  font-weight: 400;
+  margin-left: 0.1rem;
+}
+.sh-divider {
+  font-size: 0.6rem;
+  color: #ccc;
+  margin: 0 0.4rem;
+  font-weight: 400;
+}
+.sh-delete-icon {
+  cursor: pointer;
+  width: 0.6rem;
+  height: 0.6rem;
+  font-size: 0.6rem;
+  line-height: 0.6rem;
+  text-align: center;
+  color: #999;
+  font-weight: 400;
+}
+.sh-delete-icon:active {
+  opacity: 0.6;
+}
+.sh-clear-all {
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+}
+.sh-clear-all:active {
+  opacity: 0.6;
+}
+.sh-done {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #999;
+  cursor: pointer;
+}
+.sh-done:active {
+  opacity: 0.6;
+}
+.sh-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem 0.4rem;
+}
+.sh-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  color: #333;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.2s;
+}
+.sh-tag:active {
+  background-color: #e5e7eb;
+}
+.sh-tag-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6rem;
+  color: #080808;
+}
+.sh-tag-del {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.2rem;
+  cursor: pointer;
+}
+.sh-tag-del-icon {
+  width: 0.5rem;
+  height: 0.5rem;
+  color: #7c7b7b;
+}
+.sh-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sh-modal-panel {
+  background-color: #fff;
+  border-radius: 0.6rem;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: sh-slide-up 0.25s ease;
+}
+@keyframes sh-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.sh-modal-text {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #333;
+  text-align: center;
+  white-space: wrap;
+  line-height: 1.6;
+  padding: 0.8rem 1rem;
+}
+.sh-modal-actions {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  border-top: 1px solid #f0f0f0;
+}
+.sh-modal-cancel {
+  flex: 1;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #999;
+  border-right: 1px solid #f0f0f0;
+  cursor: pointer;
+  padding: 0.8rem 0;
+  border-top: 1px solid #f0f0f0;
+}
+.sh-modal-cancel:active {
+  opacity: 0.6;
+}
+.sh-modal-delete {
+  flex: 1;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  padding: 0.8rem 0;
+  cursor: pointer;
+  border-top: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+}
+.sh-modal-delete:active {
+  opacity: 0.6;
+}
+@media screen and (min-width: 768px) {
+  .sh-wrap {
+    padding: 0.6rem 2rem 0.3rem;
+  }
+  .sh-title {
+    font-size: 0.7rem;
+  }
+  .sh-toggle,
+  .sh-clear-all,
+  .sh-divider {
+    font-size: 0.65rem;
+  }
+  .sh-done {
+    font-size: 0.7rem;
+  }
+  .sh-tag-text {
+    font-size: 0.65rem;
+  }
+}

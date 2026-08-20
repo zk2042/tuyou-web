@@ -7,6 +7,7 @@ import { SearchBar as NutSearchBar, Tabs, Empty, Toast } from '@nutui/nutui-reac
 import { ArrowLeft } from '@nutui/icons-react'
 import { PostWaterfall } from '@/components/PostWaterfall'
 import ActivityCard from '@/components/ActivityCard'
+import SearchHistory from '@/components/SearchHistory'
 import { useAuthGuard } from '@/components/AuthRoute'
 import type { FeedItem, ActivityListItem } from '@/types'
 import {
@@ -38,6 +39,9 @@ const Search = () => {
 
   //+ 热门搜索关键词
   const [hotKeywords, setHotKeywords] = useState<string[]>([])
+
+  //+ 搜索历史刷新信号：每次搜索后 +1 触发 SearchHistory 重新拉取
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
 
   //+ 内容搜索结果（笔记+攻略）
   const [contentList, setContentList] = useState<FeedItem[]>([])
@@ -136,6 +140,8 @@ const Search = () => {
     //+ 两个都搜索，切换Tab时无需再加载
     searchContent(targetKw, 1, false)
     searchActivities(targetKw, 1, false)
+    //+ 触发历史记录刷新（搜索后新增一条历史）
+    setHistoryRefreshKey((k) => k + 1)
   }, [keyword, resetToHotSearch, searchContent, searchActivities, searched])
 
   //+ 在结果页时：如果把搜索框内容全部删掉，直接切回热门搜索页
@@ -255,21 +261,27 @@ const Search = () => {
       {/* 统一滚动容器：flex:1 + overflow-y:auto，外层 100vh 布局下 onScroll 生效 */}
       <div className="g-search-body" ref={scrollRef} onScroll={handleScroll}>
         {!searched ? (
-          //+ 未搜索：显示热门搜索
-          <div className="g-search-hot">
-            <div className="g-search-hot-title">热门搜索</div>
-            <div className="g-search-hot-tags">
-              {hotKeywords.map((kw, idx) => (
-                <div
-                  key={`${kw}-${idx}`}
-                  className="g-search-hot-tag"
-                  onClick={() => handleKeywordClick(kw)}
-                >
-                  {kw}
-                </div>
-              ))}
+          //+ 未搜索：显示搜索历史 + 热门搜索
+          <>
+            <SearchHistory
+              refreshKey={historyRefreshKey}
+              onKeywordClick={handleKeywordClick}
+            />
+            <div className="g-search-hot">
+              <div className="g-search-hot-title">热门搜索</div>
+              <div className="g-search-hot-tags">
+                {hotKeywords.map((kw, idx) => (
+                  <div
+                    key={`${kw}-${idx}`}
+                    className="g-search-hot-tag"
+                    onClick={() => handleKeywordClick(kw)}
+                  >
+                    {kw}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           //+ 已搜索：显示Tab + 搜索结果
           <div className="g-search-result">
