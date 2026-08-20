@@ -3,7 +3,7 @@
 //+ HeaderNavBar + 封面图 + 标签标题 + 信息面板 + 发起人 + 活动介绍 + 成员列表 + 底部操作栏
 //+ 报名/取消报名：文档8.1节要求取消确认弹窗，直接操作 + Toast 提示
 //+ 标签使用习惯：NutUI 组件优先（Button/Tag），其余用原生 HTML 标签（div/img/span）
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { RichText } from '@tarojs/components'
 import { Tag as NutuiTag, Dialog ,Ellipsis} from '@nutui/nutui-react'
@@ -22,7 +22,9 @@ import HeaderNavBar from '@/components/HeaderNavBar'
 import Avatar from '@/components/Avatar'
 import UserCardModal from '@/components/UserCardModal'
 import ParticipantsModal from '@/components/ParticipantsModal'
-import SharePoster from '@/components/SharePoster'
+//+ 懒加载 SharePoster：避免其静态依赖 qrcode 库未安装时拖垮整个 ActivityDetail
+//+ 仅在用户点击"分享海报"时才加载，未点击不会触发 qrcode 模块解析
+const SharePoster = lazy(() => import('@/components/SharePoster'))
 import { useAuthGuard } from '@/components/AuthRoute'
 import { normalizeDetailHtml } from '@/utils/html'
 import '@/components/MarkdownEditor/index.less'
@@ -485,13 +487,18 @@ const ActivityDetail = () => {
       />
 
       {/* 分享海报弹窗：仅领队(isOwner)通过右上角"··· → 分享海报"触发 */}
-      <SharePoster
-        visible={sharePosterVisible}
-        onClose={() => setSharePosterVisible(false)}
-        activityTitle={currentActivity.title}
-        activityCover={currentActivity.coverImg}
-        shareUrl={shareUrl}
-      />
+      {/* 懒加载 + 仅在 visible 时挂载：未点击分享时不会加载 qrcode 库 */}
+      {sharePosterVisible && (
+        <Suspense fallback={null}>
+          <SharePoster
+            visible={sharePosterVisible}
+            onClose={() => setSharePosterVisible(false)}
+            activityTitle={currentActivity.title}
+            activityCover={currentActivity.coverImg}
+            shareUrl={shareUrl}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

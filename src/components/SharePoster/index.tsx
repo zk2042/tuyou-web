@@ -34,14 +34,38 @@ const SharePoster: React.FC<SharePosterProps> = ({
   const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  //+ 加载图片，带 crossOrigin 避免 canvas toDataURL 被污染（CORS）
+  //+ 加载图片用于 canvas 合成
+  //+ 方案：fetch 拿 blob URL → img 加载 blob URL（同源，不污染 canvas）
+  //+ 这样无需图片服务器返回 CORS 头，也能正常 toDataURL
+  //+ 兜底：fetch 失败时直接用原 URL + crossOrigin 加载（要求服务器支持 CORS）
   const loadImage = useCallback((src: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => resolve(img)
-      img.onerror = () => reject(new Error('图片加载失败'))
-      img.src = src
+    return new Promise(async (resolve, reject) => {
+      //+ 路径1：fetch 转 blob URL（推荐，绕过 canvas CORS 污染）
+      try {
+        const response = await fetch(src, { mode: 'cors' })
+        if (!response.ok) throw new Error(`fetch ${response.status}`)
+        const blob = await response.blob()
+        const objectUrl = URL.createObjectURL(blob)
+        const img = new Image()
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl)
+          resolve(img)
+        }
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl)
+          reject(new Error('blob URL 加载失败'))
+        }
+        img.src = objectUrl
+        return
+      } catch (err) {
+        //+ 路径2：fetch 失败兜底，直接用原 URL + crossOrigin 加载
+        //+ 要求图片服务器返回 Access-Control-Allow-Origin，否则会失败
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => resolve(img)
+        img.onerror = () => reject(new Error('图片加载失败'))
+        img.src = src
+      }
     })
   }, [])
 
