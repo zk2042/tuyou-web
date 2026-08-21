@@ -73,7 +73,9 @@
   font-size: 0.7rem;
   color: #111111;
   font-weight: 320;
-  line-height: 1.8;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
   padding: 0.22rem 0;
 }
 .section-title {

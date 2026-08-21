@@ -103,6 +103,7 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityC
     coverImg,
     title,
     startTime,
+    endTime,
     address,
     leader,
     currentPeople,
@@ -162,7 +163,7 @@ const ActivityCard = ({ activity, onClick, onSignup, onCancelSignup }: ActivityC
         <div className="card-info">
           <div className="card-title">{title}</div>
           <div className="card-metas">
-            <div className="card-meta">📅 {startTime}</div>
+            <div className="card-meta">📅 {startTime.slice(0, 16)}</div>
             <div className="card-meta">📍 {address}</div>
           </div>
 

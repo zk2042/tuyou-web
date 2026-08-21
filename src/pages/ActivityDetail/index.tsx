@@ -371,13 +371,14 @@ const ActivityDetail = () => {
 
                 {/* 活动信息面板 */}
                 <div className='info-panel'>
-                  <div className='info-item'>📅{formatTime(currentActivity.startTime)}</div>
-                  <div className='info-item'>📍 {currentActivity.address}</div>
-                  <div className='info-item'>💰 {formatPrice(currentActivity.price)}</div>
-                  <div className='info-item'>
-                    👥 {currentActivity.currentPeople}/{currentActivity.maxPeople}人
+                  <div className='info-item iconfont icon-kaishishijian'>{formatTime(currentActivity.startTime)}</div>
+                  <div className='info-item iconfont icon-jieshushijian'>{formatTime(currentActivity.endTime)}</div>
+                  <div className='info-item iconfont icon-didian1'> {currentActivity.address}</div>
+                  <div className='info-item iconfont icon-qian'>{formatPrice(currentActivity.price)}</div>
+                  <div className='info-item iconfont icon-renshu1'>
+                     {currentActivity.currentPeople}/{currentActivity.maxPeople}人
                   </div>
-                  <div className='info-item'>📊 {currentActivity.difficulty}</div>
+                  <div className='info-item iconfont icon-nandu'> {currentActivity.difficulty}</div>
                 </div>
 
                 {/* 发起人 */}
