@@ -295,10 +295,10 @@ const FeedCard = ({
         <div className='feed-meta'>
           <img
             className='user-avatar'
-            src={item.member.avatar}
-            alt={item.member.nickname}
+            src={item.member?.avatar || ''}
+            alt={item.member?.nickname || '匿名'}
           />
-          <span className='user-name'>{item.member.nickname}</span>
+          <span className='user-name'>{item.member?.nickname || '匿名'}</span>
           {actionType === 'favorite' ? (
             //+ 收藏模式：底部右侧显示收藏图标（替代点赞图标），点击取消收藏
             <span className={`feed-likes ${localFav ? 'is-faved' : ''}`} onClick={handleFavClick}>
@@ -366,15 +366,17 @@ export function PostWaterfall({
 
   //+ Masonry 分配：列宽 / remPx / feed 变化时重新计算
   const { leftColumn, rightColumn } = useMemo(() => {
+    //+ 入口过滤脏数据：member 为 null 的项不进入渲染流程，避免 FeedCard 内访问 null.avatar 崩溃
+    const safeFeed = feed.filter(item => item && item.member)
     if (colWidth === 0) {
       //+ 列宽未就绪：退化为奇偶分配，避免首屏空白（轻微布局抖动，方案固有代价）
-      const left = feed.filter((_, i) => i % 2 === 0)
-      const right = feed.filter((_, i) => i % 2 === 1)
+      const left = safeFeed.filter((_, i) => i % 2 === 0)
+      const right = safeFeed.filter((_, i) => i % 2 === 1)
       return { leftColumn: left, rightColumn: right }
     }
     const infoHeightPx = INFO_HEIGHT_REM * remPx
     const cardGapPx = CARD_GAP_REM * remPx
-    const { left, right } = masonryDistribute(feed, colWidth, infoHeightPx, cardGapPx)
+    const { left, right } = masonryDistribute(safeFeed, colWidth, infoHeightPx, cardGapPx)
     return { leftColumn: left, rightColumn: right }
   }, [feed, colWidth, remPx])
 
