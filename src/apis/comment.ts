@@ -58,14 +58,18 @@ export async function createCommentAPI(params: Omit<CreateCommentParams, 'target
 //+ 获取一级评论列表（分页）
 //+ 展示规则由后端实现（前2条热评 + 其余按时间倒序），本层仅做分页与字段适配
 //+ 字段适配：String ID → Number（接口文档要求 targetId 为 integer）
-export async function getCommentsAPI(params: Omit<CommentQueryParams, 'targetId'> & { targetId: number | string }): Promise<ResponseData<PageResult<Comment>>> {
+//+ signal：支持 AbortSignal，用于切换详情页时 abort 上一个未完成请求，防止旧 fulfilled 覆盖新数据
+export async function getCommentsAPI(
+  params: Omit<CommentQueryParams, 'targetId'> & { targetId: number | string },
+  signal?: AbortSignal | null
+): Promise<ResponseData<PageResult<Comment>>> {
   const normalized: CommentQueryParams = {
     targetType: params.targetType,
     targetId: Number(params.targetId) || 0,
     page: params.page,
     size: params.size
   }
-  const res = await get<CommentListResult>('/comments', normalized)
+  const res = await get<CommentListResult>('/comments', normalized, undefined, signal)
   const normalized_1: PageResult<Comment> = {
     ...res.data,
     list: res.data.list.map(normalizeComment)

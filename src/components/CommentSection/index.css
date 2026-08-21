@@ -22,10 +22,14 @@
 }
 .comment-section .comment-load-more {
   text-align: center;
-  color: #2e7d32;
   padding: 24px 0;
   font-size: 26px;
   cursor: pointer;
+  color: #2e7d32;
+}
+.comment-section .comment-load-more.comment-no-more {
+  color: #bbb;
+  cursor: default;
 }
 .comment-item {
   display: flex;
@@ -48,6 +52,9 @@
   font-weight: 400;
   color: #999;
   margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .comment-item .comment-nickname .nickname-at {
   margin: 0 2px 0 12px;
@@ -130,6 +137,9 @@
   display: flex;
   align-items: center;
 }
+.comment-expand-row .comment-expand-btn.comment-expand-more {
+  margin-right: 24px;
+}
 .comment-expand-row .comment-expand-icon {
   color: #999;
 }
@@ -163,6 +173,7 @@
   font-size: 24px;
   color: #999;
   text-align: center;
+  padding: 12px 0;
 }
 .delete-modal .delete-actions {
   display: flex;
@@ -172,9 +183,12 @@
 }
 .delete-modal .delete-cancel-btn {
   flex: 1;
+  padding: 0;
 }
 .delete-modal .delete-confirm-btn {
+  padding: 0;
   flex: 1;
+  background-color: #2e7d32;
 }
 @media screen and (min-width: 768px) {
   .comment-replies-wrap {

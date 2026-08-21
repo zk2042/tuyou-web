@@ -148,9 +148,9 @@ const CommentInput: React.FC<CommentInputProps> = ({
       case 'favorite':
         onToggleFavorite?.(!isFavorited)
         break
-      case 'share':
-        Toast.show({ content: '禁止转发', duration: 1 })
-        break
+      // case 'share':
+      //   Toast.show({ content: '禁止转发', duration: 1 })
+      //   break
     }
   }
 
@@ -165,7 +165,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
         {/* 收藏 */}
         <IconFont name={isFavorited ? 'shoucangfill' : 'shoucang'} fontClassName='iconfont' classPrefix='icon' className={isFavorited ? 'favorite-active' : ''} onClick={(e) => handleIconClick(e, 'favorite')} />
         {/* 转发 */}
-        <IconFont name='zhuanfa' fontClassName='iconfont' classPrefix='icon' onClick={(e) => handleIconClick(e, 'share')} />
+        {/* <IconFont name='zhuanfa' fontClassName='iconfont' classPrefix='icon' onClick={(e) => handleIconClick(e, 'share')} /> */}
       </Cell>
 
       <Popup

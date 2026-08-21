@@ -15,7 +15,7 @@ import './index.less'
 //+ 开关项配置
 const switchItems = [
   { key: 'notification', label: '消息通知', default: true ,icon:'icon-xiaoxitongzhi'},
-  { key: 'location', label: '位置服务', default: false ,icon:'icon-weizhifuwu'},
+  // { key: 'location', label: '位置服务', default: false ,icon:'icon-weizhifuwu'},
 ]
 
 //+ 跳转项配置

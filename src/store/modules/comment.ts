@@ -16,6 +16,10 @@ import { diffCommentLikes, type CommentLikePatch } from '@/utils/diffCommentLike
 interface CommentPollResult {
   patch: CommentLikePatch[]
   totalComments?: number
+  //+ 请求发起时的 target，fulfilled 时校验是否仍为当前 state 的 target
+  //+ 防止从 A 详情页跳到 B 时，A 的轮询 fulfilled 晚到，用 A 的 totalComments 覆盖 B
+  targetType: number
+  targetId: string
 }
 
 //+ 评论列表查询参数（fetchComments）
@@ -142,16 +146,17 @@ function appendRepliesToParent(list: Comment[], parentId: string, replies: Comme
 // ==================== 异步 Thunks ====================
 
 //+ 获取一级评论列表（首页，重置列表）
+//+ signal：切换详情页时 abort 上一次请求，防止旧 fulfilled 覆盖新页面的 totalComments/list
 export const fetchComments = createAsyncThunk(
   'comment/fetchComments',
-  async (args: FetchCommentsArgs, { rejectWithValue }) => {
+  async (args: FetchCommentsArgs, { rejectWithValue, signal }) => {
     try {
       const res = await getCommentsAPI({
         targetType: args.targetType,
         targetId: args.targetId,
         page: args.page ?? 1,
         size: args.size ?? 15
-      })
+      }, signal)
       if (res.code === 0 || res.code === 200) {
         return {
           ...res.data,
@@ -161,6 +166,8 @@ export const fetchComments = createAsyncThunk(
       }
       return rejectWithValue(res.message || '获取评论失败')
     } catch (error: any) {
+      //+ abort 时返回 'aborted'，reducer 据此跳过 state 更新
+      if (error?.name === 'AbortError' || signal?.aborted) return rejectWithValue('aborted')
       return rejectWithValue(error?.message || '网络错误')
     }
   }
@@ -282,12 +289,17 @@ export const fetchReplies = createAsyncThunk(
 //+   4. 不替换整个 list，只改 likeCount 字段，引用最小化，UI 无抖动
 export const pollCommentUpdates = createAsyncThunk(
   'comment/pollCommentUpdates',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { getState, rejectWithValue, signal }) => {
     const state = (getState() as { comment: CommentState }).comment
     //+ targetType/targetId 为空（未进入详情页）→ 不轮询
     if (state.targetType == null || !state.targetId) {
       return rejectWithValue('no target')
     }
+    //+ 锁定请求发起时的 target，fulfilled 时校验是否仍为当前 state 的 target
+    //+ 场景：从 A 详情页跳到 B 时立即触发轮询，state 还是 A 的，请求 A 的评论
+    //+      fulfilled 晚于 fetchComments(B) 到达 → 用 A 的 totalComments 覆盖 B
+    const reqTargetType = state.targetType
+    const reqTargetId = state.targetId
     try {
       //+ 并发请求所有已加载的一级评论页（1 ~ state.page）
       //+ 之前只请求 state.page（当前页），导致前几页的 likeCount 变化轮询不到
@@ -295,11 +307,11 @@ export const pollCommentUpdates = createAsyncThunk(
       const results = await Promise.all(
         pages.map(page =>
           getCommentsAPI({
-            targetType: state.targetType!,
-            targetId: Number(state.targetId) || 0,
+            targetType: reqTargetType,
+            targetId: Number(reqTargetId) || 0,
             page,
             size: state.size
-          })
+          }, signal)
         )
       )
       //+ 任一页失败则整体失败（保持数据一致性）
@@ -314,9 +326,13 @@ export const pollCommentUpdates = createAsyncThunk(
       //+ totalComments 每页都返回相同值，取第一页的即可
       return {
         patch,
-        totalComments: results[0]?.data.totalComments
+        totalComments: results[0]?.data.totalComments,
+        targetType: reqTargetType,
+        targetId: reqTargetId
       }
     } catch (error: any) {
+      //+ abort 时返回 'aborted'，reducer 跳过 state 更新
+      if (error?.name === 'AbortError' || signal?.aborted) return rejectWithValue('aborted')
       return rejectWithValue(error?.message || '网络错误')
     }
   }
@@ -369,6 +385,8 @@ const commentSlice = createSlice({
         state.repliesHasMore = {}
       })
       .addCase(fetchComments.rejected, (state, action) => {
+        //+ abort 触发的 rejected：跳过 state 更新，避免清掉新请求的数据
+        if (action.payload === 'aborted') return
         state.loading = false
         state.error = action.payload as string
       })
@@ -398,12 +416,17 @@ const commentSlice = createSlice({
         if (!newComment.replyToId) {
           //+ 一级评论 → 置顶
           state.list = [newComment, ...state.list]
+          //+ 乐观更新评论总数：一级评论数 +1，含二级回复总数 +1
+          state.total = (state.total || 0) + 1
+          state.totalComments = (state.totalComments || 0) + 1
         } else {
           //+ 二级回复 → 追加到对应一级评论，并更新 replyCount
           state.list = appendRepliesToParent(state.list, newComment.replyToId, [newComment])
           state.list = state.list.map(c => c.id === newComment.replyToId
             ? { ...c, replyCount: (c.replyCount ?? 0) + 1 }
             : c)
+          //+ 乐观更新评论总数：含二级回复的总数 +1（total 是一级评论数，不变）
+          state.totalComments = (state.totalComments || 0) + 1
         }
       })
       .addCase(createComment.rejected, (state, action) => {
@@ -476,7 +499,22 @@ const commentSlice = createSlice({
       })
       //+ 删除评论
       .addCase(deleteComment.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
-        state.list = removeCommentFromTree(state.list, action.payload.id)
+        const { id } = action.payload
+        //+ 先找被删评论：判断层级 + 算清要减去的总数
+        const target = findCommentById(state.list, id)
+        if (target) {
+          const isLevel1 = state.list.some(c => c.id === id)
+          if (isLevel1) {
+            //+ 一级评论：减自身 + 其下所有二级回复（含已加载的 replies）
+            const repliesLen = target.replies?.length || 0
+            state.total = Math.max(0, (state.total || 0) - 1)
+            state.totalComments = Math.max(0, (state.totalComments || 0) - 1 - repliesLen)
+          } else {
+            //+ 二级回复：仅减 1
+            state.totalComments = Math.max(0, (state.totalComments || 0) - 1)
+          }
+        }
+        state.list = removeCommentFromTree(state.list, id)
       })
       //+ 加载更多二级评论
       .addCase(fetchReplies.fulfilled, (state, action: PayloadAction<{ parentId: string; list: Comment[]; page: number; hasMore: boolean }>) => {
@@ -487,8 +525,13 @@ const commentSlice = createSlice({
       })
       //+ 轮询：只 patch likeCount 变化项 + 刷新 totalComments，不替换整个 list
       //+ 跳过 2s 内有 toggleCommentLike 操作的评论，避免覆盖乐观值
+      //+ 竞态保护：请求发起时的 target 与当前 state 不一致 → 丢弃（页面已切换）
       .addCase(pollCommentUpdates.fulfilled, (state, action: PayloadAction<CommentPollResult>) => {
-        const { patch, totalComments } = action.payload
+        const { patch, totalComments, targetType: reqTargetType, targetId: reqTargetId } = action.payload
+        //+ target 不匹配 → 页面已切换，丢弃这次轮询结果（旧 target 的数据不能覆盖新 target）
+        if (state.targetType !== reqTargetType || state.targetId !== reqTargetId) {
+          return
+        }
         if (patch.length === 0) {
           //+ 无 likeCount 变化，只更新 totalComments（若后端有返回）
           if (typeof totalComments === 'number') state.totalComments = totalComments
@@ -507,6 +550,10 @@ const commentSlice = createSlice({
         if (typeof totalComments === 'number') {
           state.totalComments = totalComments
         }
+      })
+      //+ 轮询 rejected：abort 触发的跳过，避免覆盖新页数据
+      .addCase(pollCommentUpdates.rejected, (state, action) => {
+        if (action.payload === 'aborted') return
       })
   }
 })

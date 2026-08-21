@@ -75,7 +75,12 @@ const NoteDetail = () => {
       dispatch(fetchNoteDetail({ id, type: 'note' }))
       //+ 评论列表：切换目标时重置后拉取首页（targetType=1 笔记）
       dispatch(resetComments())
-      dispatch(fetchComments({ targetType: COMMENT_TARGET_TYPE.NOTE, targetId: id }))
+      //+ 保存 promise：组件卸载或 id 变化时 abort 旧请求
+      //+ 防止旧请求的 fulfilled 晚于新请求到达，覆盖新页面的 totalComments/list（评论总数对不齐）
+      const commentsPromise = dispatch(fetchComments({ targetType: COMMENT_TARGET_TYPE.NOTE, targetId: id }))
+      return () => {
+        commentsPromise.abort()
+      }
     }
   }, [dispatch, id])
 

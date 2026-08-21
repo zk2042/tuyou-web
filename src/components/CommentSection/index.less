@@ -191,13 +191,17 @@
     cursor: pointer;
     display: flex;
     align-items: center;
+    //+ 展开状态下"展开更多"和"收起"并排，加右侧间距
+    &.comment-expand-more {
+      margin-right: 24px;
+    }
   }
   .comment-expand-icon {
-    
+
     color: #999;
-    
+
   }
- 
+
 }
 
 // ========== 删除确认弹层 ==========
@@ -231,6 +235,7 @@
     font-size: 24px;
     color: #999;
     text-align: center;
+    padding: 12px 0;
   }
   .delete-actions {
     display: flex;
@@ -240,9 +245,13 @@
   }
   .delete-cancel-btn {
     flex: 1;
+    padding: 0;
+    
   }
   .delete-confirm-btn {
+    padding:0;
     flex: 1;
+    background-color: #2e7d32;
   }
 }
 @media screen and (min-width: 768px) {

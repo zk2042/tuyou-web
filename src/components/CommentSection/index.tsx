@@ -3,7 +3,7 @@
 //+ 数据源：store 作为单一数据源，通过 initData 同步展示；点赞/删除由组件乐观更新，失败回滚
 //+ 点击"回复"按钮 → 通过 onRequestReply 回调通知父组件，父组件再调用 CommentInput（Popup 弹层）完成输入+提交
 //+ 复用于笔记详情 (NoteDetail) 和攻略详情 (GuideDetail)，通过 props 传入内容类型与事件回调
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect ,useRef} from 'react'
 import Taro, { useDidHide } from '@tarojs/taro'
 import { View } from '@tarojs/components'
 import { Button } from '@nutui/nutui-react'
@@ -84,8 +84,6 @@ function formatCommentTime(raw: string | number): string {
 
 // ==================== 主组件 ====================
 
-const DEFAULT_VISIBLE_REPLIES = 2
-
 const CommentSection = (props: CommentSectionProps) => {
   const {
     initData,
@@ -101,14 +99,44 @@ const CommentSection = (props: CommentSectionProps) => {
   // ---------- 状态 ----------
   //+ 评论列表：从 store（initData）同步，store 为单一数据源
   const [comments, setComments] = useState<Comment[]>(initData ?? [])
+  //+ 上一次 comments 快照：用于检测新增二级评论
+  const prevCommentsRef = useRef<Comment[]>(initData ?? [])
+  //+ 正在通过 onLoadMoreReplies 拉取"更多"的 parent 集合
+  //+ 用途：拉取期间 replies 会增加，但不应被算到 initialCount（避免拉取的"更多"无法被收起）
+  const fetchingRepliesRef = useRef<Set<string>>(new Set())
 
   //+ initData 变化时同步（fetch/loadMore/create/like/delete 后 store 更新 → 同步展示）
+  //+ 同时检测：某条一级评论的 replies 数量增加（用户/其他人发二级评论）
+  //+          → 把新评论算到 initialCount（即归入"初始热度子评论"区域，永远显示）
+  //+          → expanded 保持 false，按钮只显示 [展示更多]，不会冒出多余的 [收起]
+  //+          → 跳过 fetchingRepliesRef 中的 parent（onLoadMoreReplies 拉取的不算到 initialCount）
   useEffect(() => {
-    setComments(initData ?? [])
+    const newComments = initData ?? []
+    const prevComments = prevCommentsRef.current
+
+    for (const newParent of newComments) {
+      if (fetchingRepliesRef.current.has(newParent.id)) continue  //+ 跳过 onLoadMoreReplies 拉取
+      const oldParent = prevComments.find(p => p.id === newParent.id)
+      const oldRepliesLen = oldParent?.replies?.length ?? 0
+      const newRepliesLen = newParent.replies?.length ?? 0
+      if (newRepliesLen > oldRepliesLen) {
+        //+ 新发评论 → 更新 initialCount（新评论归入"初始热度子评论"区域）
+        const oldInitial = initialRepliesCountRef.current.get(newParent.id) ?? 0
+        initialRepliesCountRef.current.set(newParent.id, oldInitial + (newRepliesLen - oldRepliesLen))
+      }
+    }
+
+    prevCommentsRef.current = newComments
+    setComments(newComments)
   }, [initData])
 
-  //+ 一级评论的"展开/收起"状态：key=parentId，true=展开全部已加载回复
+  //+ 一级评论的"展开/收起更多回复"状态：key=parentId，true=展开通过接口拉取的更多回复
+  //+ 注意：后端响应的初始 replies（热度子评论）永远显示，不受 expandMap 控制
+  //+       expandMap 只控制 onLoadMoreReplies 拉取的"更多"是否显示
   const [expandMap, setExpandMap] = useState<Record<string, boolean>>({})
+  //+ 记录每个 parentId 的初始 replies 数量（后端响应的热度子评论数）
+  //+ 用于区分"初始子评论"（永远显示）和"拉取的更多子评论"（可收起）
+  const initialRepliesCountRef = useRef<Map<string, number>>(new Map())
 
   //+ 二级评论加载更多状态：是否加载中 / 是否还有更多（按 parentId 隔离）
   const [repliesLoadingMap, setRepliesLoadingMap] = useState<Record<string, boolean>>({})
@@ -120,6 +148,9 @@ const CommentSection = (props: CommentSectionProps) => {
     /** 父评论 id，若为一级评论则 null */
     parentId: string | null
   } | null>(null)
+  //+ 长按锁定时间窗：长按触发后会紧接 touchend → click，导致弹层一显示就被关闭
+  //+ 加 400ms 锁定窗，长按触发后 400ms 内忽略任何关闭事件
+  const longPressLockRef = useRef(false)
 
   //+ 用户资料卡弹窗：点击评论人头像弹出
   const [cardUserId, setCardUserId] = useState<string | null>(null)
@@ -176,6 +207,15 @@ const CommentSection = (props: CommentSectionProps) => {
   const handleLongPress = useCallback((c: Comment, parentId: string | null) => {
     if (!c.canDelete) return
     setDeleteTarget({ id: c.id, parentId })
+    //+ 启动 400ms 锁定窗，防止长按后紧接的 touchend → click 关闭弹层
+    longPressLockRef.current = true
+    setTimeout(() => { longPressLockRef.current = false }, 400)
+  }, [])
+
+  //+ 关闭弹层（带锁检查）：长按后短时间内的关闭事件被忽略
+  const closeDeleteModal = useCallback(() => {
+    if (longPressLockRef.current) return
+    setDeleteTarget(null)
   }, [])
 
   const handleConfirmDelete = useCallback(async () => {
@@ -209,24 +249,59 @@ const CommentSection = (props: CommentSectionProps) => {
     })
   }, [onRequestReply])
 
-  // ---------- 交互：展开/收起二级评论（仅切换已加载回复的显隐）----------
+  // ---------- 交互：展开更多二级评论（仅针对 onLoadMoreReplies 拉取的"更多"）----------
+  //+ 场景A：用户没拉过更多（allReplies.length == initialCount）+ replyCount > initialCount → 首次拉取
+  //+ 场景B：用户拉过更多但收起过（allReplies.length > initialCount + expandRaw=false）→ 直接展开，不请求
+  //+ 注意：后端响应的初始 replies（热度子评论）永远显示，这里只管"更多"
+  const handleExpand = useCallback(async (parent: Comment) => {
+    const allReplies = parent.replies || []
+    const initialCount = initialRepliesCountRef.current.get(parent.id) ?? 0
+    const hasLoadedMore = allReplies.length > initialCount
+    const needFetch = !hasLoadedMore
+      && (parent.replyCount ?? 0) > initialCount
+      && onLoadMoreReplies
+    if (needFetch) {
+      //+ 标记拉取中：让 initData useEffect 跳过该 parent，避免拉取的"更多"被算到 initialCount
+      fetchingRepliesRef.current.add(parent.id)
+      setRepliesLoadingMap(prev => ({ ...prev, [parent.id]: true }))
+      try {
+        const { hasMore } = await onLoadMoreReplies(parent.id)
+        setRepliesHasMoreMap(prev => ({ ...prev, [parent.id]: hasMore }))
+      } catch (e) {
+        Taro.showToast({ title: '加载回复失败', icon: 'none' })
+        fetchingRepliesRef.current.delete(parent.id)
+        return  //+ 拉取失败不展开
+      } finally {
+        setRepliesLoadingMap(prev => ({ ...prev, [parent.id]: false }))
+      }
+      fetchingRepliesRef.current.delete(parent.id)
+    }
+    //+ 标记展开（首次拉取成功 / 已有更多数据直接展开）
+    setExpandMap(prev => ({ ...prev, [parent.id]: true }))
+  }, [onLoadMoreReplies])
+
+  // ---------- 交互：收起二级评论（仅切换显隐，replies 数据保留在 store）----------
+  //+ 下次点"展开更多"走场景 B，直接显示已加载，不重新请求
   const toggleExpand = useCallback((parentId: string) => {
     setExpandMap(prev => ({ ...prev, [parentId]: !prev[parentId] }))
   }, [])
 
-  // ---------- 交互：加载更多二级评论（调用父组件 → store 追加 → initData 同步）----------
+  // ---------- 交互：展开后继续加载更多二级评论（仅当 hasMoreReplies=true 才显示按钮）----------
+  //+ 与 handleExpand 区分：handleExpand 是"从收起到展开"，本函数是"已展开状态下加载下一页"
   const handleLoadMoreReplies = useCallback(async (parentId: string) => {
     if (!onLoadMoreReplies) return
+    //+ 标记拉取中：避免拉取的"更多"被算到 initialCount
+    fetchingRepliesRef.current.add(parentId)
     setRepliesLoadingMap(prev => ({ ...prev, [parentId]: true }))
     try {
       const { hasMore } = await onLoadMoreReplies(parentId)
       setRepliesHasMoreMap(prev => ({ ...prev, [parentId]: hasMore }))
-      //+ 展开显示全部已加载回复
-      setExpandMap(prev => ({ ...prev, [parentId]: true }))
+      //+ 保持 expanded=true，新数据通过 initData 同步进来追加显示
     } catch (e) {
       Taro.showToast({ title: '加载回复失败', icon: 'none' })
     } finally {
       setRepliesLoadingMap(prev => ({ ...prev, [parentId]: false }))
+      fetchingRepliesRef.current.delete(parentId)
     }
   }, [onLoadMoreReplies])
 
@@ -301,26 +376,50 @@ const CommentSection = (props: CommentSectionProps) => {
     )
   }
 
-  // ---------- 渲染：一级评论 + 二级 + 展开/收起/加载更多 ----------
+  // ---------- 渲染：一级评论 + 二级 + 展示更多/收起 ----------
+  //+ 规则（按接口文档）：
+  //+   一页渲染规则：
+  //+     replies 不为空 → 渲染出来（初始热度子评论，永远显示，不受收起影响）
+  //+     replies 为空 → 不渲染子评论
+  //+     replyCount=0 → 不显示 [展示更多] 和 [收起]
+  //+     replyCount>0 → 显示 [展示更多]，无 [收起]
+  //+   点击 [展示更多]：
+  //+     首次 → 拉取更多二级评论
+  //+     拉取后 hasMoreReplies=true → 显示 [展示更多][收起]
+  //+     拉取后 hasMoreReplies=false → 只显示 [收起]
+  //+   点击 [收起]：
+  //+     收起全部"更多"数据，保留初始 replies（热度子评论不被收起）
+  //+     按钮变回 [展示更多]
+  //+   收起后再点 [展示更多] → 直接展开上次收起的数据，不重新请求
   const renderLevel1 = (parent: Comment) => {
     const allReplies = parent.replies || []
     const replyCount = parent.replyCount ?? allReplies.length
-    const expanded = !!expandMap[parent.id]
-    //+ 是否还有更多二级评论未加载：未配置回调时退化为 false（仅展开/收起已加载）
+
+    //+ 记录初始 replies 数量（首次渲染时锁定，后续 onLoadMoreReplies 追加的不计入）
+    if (!initialRepliesCountRef.current.has(parent.id)) {
+      initialRepliesCountRef.current.set(parent.id, allReplies.length)
+    }
+    const initialCount = initialRepliesCountRef.current.get(parent.id) || 0
+
+    const expandRaw = expandMap[parent.id]
+    //+ undefined → 默认不展开"更多"（false）；用户显式设置则用用户的值
+    const expanded = expandRaw === undefined ? false : expandRaw
+
+    //+ 是否还有未加载的二级评论：replyCount > 已加载数 + 配置了回调
     const hasMoreReplies = onLoadMoreReplies
       ? (repliesHasMoreMap[parent.id] ?? (replyCount > allReplies.length))
       : false
     const repliesLoading = repliesLoadingMap[parent.id]
 
-    //+ 可见回复：已展开或有更多待加载时显示全部已加载；否则只显示前2条
-    const showAll = expanded || hasMoreReplies
-    const visibleReplies = showAll ? allReplies : allReplies.slice(0, DEFAULT_VISIBLE_REPLIES)
-    //+ 是否显示展开行：回复总数 > 0 即显示入口
-    //+ 后端热度过滤规则：热度达标才附带2条 replies，不达标则 replies 为空
-    //+ 故 replyCount > 0 但 replies 为空时仍需显示入口，点击触发加载更多接口拉取全部二级评论
-    const showExpandRow = replyCount > 0
-    //+ 待加载的回复数（用于按钮文案）
-    const pendingCount = Math.max(0, replyCount - allReplies.length)
+    //+ 可见回复：
+    //+   展开状态 → 显示全部（初始 + 更多）
+    //+   收起状态 → 只显示前 initialCount 条（初始热度子评论），隐藏"更多"
+    const visibleReplies = expanded
+      ? allReplies
+      : allReplies.slice(0, initialCount)
+    //+ 显示展开行入口：replyCount > initialCount（还有更多可加载/可展开）
+    //+ 如果 replyCount === initialCount（初始已全部返回），无需展开入口
+    const showExpandRow = replyCount > initialCount
 
     return (
       <div key={parent.id} className='comment-level1-wrap'>
@@ -333,23 +432,32 @@ const CommentSection = (props: CommentSectionProps) => {
           </div>
         )}
 
-        {/* 展开/收起/加载更多 控制 */}
+        {/* 展示更多/收起 控制 */}
         {showExpandRow && (
           <div className='comment-expand-row'>
             <span className='comment-expand-line'></span>
-            {hasMoreReplies ? (
-              <span className='comment-expand-btn' onClick={() => handleLoadMoreReplies(parent.id)}>
-                {repliesLoading ? '加载中...' : `展开${pendingCount}条回复`}
+            {!expanded ? (
+              //+ 收起状态：只显示 [展示更多]
+              <span className='comment-expand-btn' onClick={() => handleExpand(parent)}>
+                {repliesLoading ? '加载中...' : '展示更多'}
                 {!repliesLoading && <ArrowDown className='comment-expand-icon'/>}
               </span>
-            ) : expanded ? (
-              <span className='comment-expand-btn' onClick={() => toggleExpand(parent.id)}>
-                收起<ArrowUp className='comment-expand-icon'/>
-              </span>
             ) : (
-              <span className='comment-expand-btn' onClick={() => toggleExpand(parent.id)}>
-                展开更多<ArrowDown className='comment-expand-icon'/>
-              </span>
+              //+ 展开状态：[展示更多?] [收起] 并排，hasMoreReplies 时才显示左侧
+              <>
+                {hasMoreReplies && (
+                  <span
+                    className='comment-expand-btn comment-expand-more'
+                    onClick={() => handleLoadMoreReplies(parent.id)}
+                  >
+                    {repliesLoading ? '加载中...' : '展示更多'}
+                    {!repliesLoading && <ArrowDown className='comment-expand-icon'/>}
+                  </span>
+                )}
+                <span className='comment-expand-btn' onClick={() => toggleExpand(parent.id)}>
+                  收起<ArrowUp className='comment-expand-icon'/>
+                </span>
+              </>
             )}
           </div>
         )}
@@ -389,12 +497,12 @@ const CommentSection = (props: CommentSectionProps) => {
 
       {/* 删除确认弹层 */}
       {deleteTarget && (
-        <div className='delete-modal' onClick={() => setDeleteTarget(null)}>
+        <div className='delete-modal' onClick={closeDeleteModal}>
           <div className='delete-panel' onClick={(e) => e.stopPropagation()}>
-            <div className='delete-title'>确认删除该评论？</div>
-            <div className='delete-sub'>删除后无法恢复，一级评论下的所有子评论都会删除</div>
+            {/* <div className='delete-title'>确认删除该评论？</div> */}
+            <div className='delete-sub'>确认删除该评论？删除后无法恢复</div>
             <div className='delete-actions'>
-              <Button className='delete-cancel-btn' onClick={() => setDeleteTarget(null)} block>取消</Button>
+              <Button className='delete-cancel-btn' onClick={closeDeleteModal} block>取消</Button>
               <Button className='delete-confirm-btn' type='primary' onClick={handleConfirmDelete} block>删除</Button>
             </div>
           </div>
