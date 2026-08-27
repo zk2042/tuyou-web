@@ -187,7 +187,7 @@
 }
 .wechat-qr-section .wechat-qr-img {
   width: 6rem;
-  height: 6rem;
+  aspect-ratio: 3/4;
   object-fit: contain;
   background: #f7f8fa;
   -webkit-touch-callout: default;
@@ -362,7 +362,7 @@
 }
 .signup-qr-card .signup-qr-img {
   width: 5rem;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3/4;
   object-fit: contain;
   background: #f7f8fa;
   -webkit-touch-callout: default;

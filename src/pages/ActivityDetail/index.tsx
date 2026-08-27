@@ -461,7 +461,7 @@ const ActivityDetail = () => {
 
         {/* 微信群二维码：仅已报名用户可见（与已报名头像同模式，后端按 joined 返回 wechatQR） */}
         {/* 微信 H5 限制：JS 不能调相册 API，只能展示图片让用户长按保存；img 加 -webkit-touch-callout 启用长按菜单 */}
-        {currentActivity.joined && currentActivity.wechatQR ? (
+        {currentActivity.joined ? (currentActivity.wechatQR ? (
           <div className='wechat-qr-section'>
             {/* <span className='section-title'>微信群二维码</span> */}
             <div className='wechat-qr-img-wrapper'>
@@ -473,7 +473,7 @@ const ActivityDetail = () => {
             </div>
             <p className='wechat-qr-tip'>长按上方二维码保存到相册，微信扫码进群交流</p>
           </div>
-        ):(<div className='wechat-qr-no-tip'>暂无微信群二维码，请联系活动领队</div>)}
+        ):(<div className='wechat-qr-no-tip'>暂无微信群二维码，请联系活动领队</div>)):(<div className='wechat-qr-no-tip'>等待报名...</div>)}
         </div>
       </div>
 
