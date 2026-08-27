@@ -152,6 +152,18 @@ const ActivityDetail = () => {
           title: wasJoined ? '已取消报名' : '报名成功',
           icon: 'success'
         })
+        //+ 报名成功（!wasJoined → isJoined=true）：后端返回 wechatQR，弹卡片提示用户长按保存进群
+        //+ Toast 提示后 800ms 弹层（让用户先看到"报名成功"toast，再展示二维码卡片）
+        if (!wasJoined) {
+          const payload = res.payload as { isJoined?: boolean; wechatQR?: string } | undefined
+          const qr = payload?.wechatQR
+          if (qr) {
+            setTimeout(() => {
+              setSignupQRCode(qr)
+              setSignupQRVisible(true)
+            }, 800)
+          }
+        }
         //+ 报名成功后重新拉取详情，更新 members 列表等全部字段（文档3.4节推荐方式）
         dispatch(fetchActivityDetail(activityId))
       } else if (!wasAborted) {
@@ -254,6 +266,11 @@ const ActivityDetail = () => {
 
   //+ 分享海报弹窗：仅领队(isOwner)可触发，从右上角"···" → 分享海报 进入
   const [sharePosterVisible, setSharePosterVisible] = useState(false)
+
+  //+ 报名成功弹层：报名成功（!wasJoined → isJoined=true）时后端返回 wechatQR
+  //+ 弹卡片展示二维码，强提示用户长按保存进群；用户可取消关闭
+  const [signupQRVisible, setSignupQRVisible] = useState(false)
+  const [signupQRCode, setSignupQRCode] = useState('')
   //+ 当前活动详情页完整 H5 链接（二维码扫码后跳转地址）
   const shareUrl = useMemo(() => {
     if (typeof window !== 'undefined' && window.location) {
@@ -441,6 +458,22 @@ const ActivityDetail = () => {
             ))}
           </div>
         </div>
+
+        {/* 微信群二维码：仅已报名用户可见（与已报名头像同模式，后端按 joined 返回 wechatQR） */}
+        {/* 微信 H5 限制：JS 不能调相册 API，只能展示图片让用户长按保存；img 加 -webkit-touch-callout 启用长按菜单 */}
+        {currentActivity.joined && currentActivity.wechatQR ? (
+          <div className='wechat-qr-section'>
+            {/* <span className='section-title'>微信群二维码</span> */}
+            <div className='wechat-qr-img-wrapper'>
+              <img
+                className='wechat-qr-img'
+                src={currentActivity.wechatQR}
+                alt='微信群二维码'
+              />
+            </div>
+            <p className='wechat-qr-tip'>长按上方二维码保存到相册，微信扫码进群交流</p>
+          </div>
+        ):(<div className='wechat-qr-no-tip'>暂无微信群二维码，请联系活动领队</div>)}
         </div>
       </div>
 
@@ -511,6 +544,26 @@ const ActivityDetail = () => {
             shareUrl={shareUrl}
           />
         </Suspense>
+      )}
+
+      {/* 报名成功二维码弹层：报名成功后弹卡片展示微信群二维码 */}
+      {/* 用户可点击遮罩或"我知道了"关闭；微信 H5 长按图片保存到相册 */}
+      {signupQRVisible && (
+        <div className='signup-qr-mask' onClick={() => setSignupQRVisible(false)}>
+          <div className='signup-qr-card' onClick={(e) => e.stopPropagation()}>
+            <div className='signup-qr-title'>报名成功</div>
+            <div className='signup-qr-img-wrapper'>
+              <img className='signup-qr-img' src={signupQRCode} alt='微信群二维码' />
+            </div>
+            <div className='signup-qr-subtitle'>长按二维码保存到相册，微信扫码进群交流</div>
+            <button
+              className='signup-qr-btn'
+              onClick={() => setSignupQRVisible(false)}
+            >
+              我知道了
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

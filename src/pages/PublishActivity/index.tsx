@@ -12,6 +12,7 @@ import HeaderNavBar from '@/components/HeaderNavBar'
 import RichEditor from '@/components/RichEditor'
 import { htmlToText, isHtmlEmpty } from '@/utils/html'
 import { createActivityAPI } from '@/apis/activity'
+import { uploadImageAPI } from '@/apis/upload'
 import {
   uploadImage,
   resetImage as resetUploadImage,
@@ -40,6 +41,8 @@ interface FormState {
   maxPeople: string
   difficulty: string
   activityContent: string
+  //+ 微信群二维码图片地址（领队发布时必填，报名成功后展示给已报名用户）
+  wechatQR: string
 }
 
 const initialForm: FormState = {
@@ -52,7 +55,8 @@ const initialForm: FormState = {
   price: '',
   maxPeople: '',
   difficulty: '',
-  activityContent: ''
+  activityContent: '',
+  wechatQR: ''
 }
 
 //+ datetime-local 值转提交格式 YYYY-MM-DD HH:mm
@@ -94,6 +98,8 @@ const PublishActivity = () => {
   const [form, setForm] = useState<FormState>(initialForm)
   //+ 提交中 Loading 状态（防重复提交）
   const [submitting, setSubmitting] = useState(false)
+  //+ 二维码独立上传中状态（不走 upload store，避免与封面 store 状态冲突）
+  const [qrUploading, setQrUploading] = useState(false)
   //+ Picker / DatePicker 弹窗可见性控制
   const [typePickerVisible, setTypePickerVisible] = useState(false)
   const [difficultyPickerVisible, setDifficultyPickerVisible] = useState(false)
@@ -143,6 +149,32 @@ const PublishActivity = () => {
     updateField('coverImg', '')
   }
 
+  //+ 微信群二维码上传：直接调 uploadImageAPI（不走 upload store，避免与封面状态冲突）
+  //+ type 仍为 'activity'，与后端业务分流目录一致
+  const handleUploadQR = async () => {
+    if (qrUploading) return
+    try {
+      const chooseRes = await Taro.chooseImage({ count: 1, sizeType: ['compressed'] })
+      const filePath = chooseRes.tempFilePaths[0]
+      setQrUploading(true)
+      const res = await uploadImageAPI(filePath, 'activity')
+      if (res.code === 0 || res.code === 200) {
+        updateField('wechatQR', res.data.url)
+      } else {
+        Taro.showToast({ title: res.message || '二维码上传失败', icon: 'none' })
+      }
+    } catch (err: any) {
+      Taro.showToast({ title: err?.message || '二维码上传失败', icon: 'none' })
+    } finally {
+      setQrUploading(false)
+    }
+  }
+
+  //+ 删除微信群二维码
+  const handleRemoveQR = () => {
+    updateField('wechatQR', '')
+  }
+
   //+ 活动类型 Picker 确认
   const handleTypeConfirm = (_options: any, value: any[]) => {
     updateField('category', String(value[0]))
@@ -171,6 +203,10 @@ const PublishActivity = () => {
   const validateForm = (): boolean => {
     if (!form.coverImg) {
       Taro.showToast({ title: '请上传活动封面图', icon: 'none' })
+      return false
+    }
+    if (!form.wechatQR) {
+      Taro.showToast({ title: '请上传微信群二维码', icon: 'none' })
       return false
     }
     if (!form.title.trim() || form.title.length > 50) {
@@ -234,6 +270,11 @@ const PublishActivity = () => {
       Taro.showToast({ title: '封面上传中，请稍候', icon: 'none' })
       return false
     }
+    //+ 二维码正在上传中不允许提交
+    if (qrUploading) {
+      Taro.showToast({ title: '二维码上传中，请稍候', icon: 'none' })
+      return false
+    }
     return true
   }
 
@@ -254,7 +295,8 @@ const PublishActivity = () => {
         price: Number(form.price),
         maxPeople: Number(form.maxPeople),
         difficulty: form.difficulty,
-        activityContent: form.activityContent
+        activityContent: form.activityContent,
+        wechatQR: form.wechatQR
       })
 
       if (res.code === 0 || res.code === 200) {
@@ -313,6 +355,31 @@ const PublishActivity = () => {
                 <span className="uploading-text">上传中...</span>
               ) : (
                 <div className="cover-placeholder">
+                  <IconFont name="xiangji" fontClassName="iconfont" classPrefix="icon" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 微信群二维码上传（领队必填，报名成功后展示给已报名用户） */}
+        <div className="qr-section">
+          <div className="upload-label">
+            微信群二维码
+            <span className="upload-hint">报名用户可见，用于扫码进群</span>
+          </div>
+
+          {form.wechatQR ? (
+            <div className="qr-preview">
+              <img className="qr-img" src={form.wechatQR} alt="二维码预览" />
+              <div className="qr-remove" onClick={handleRemoveQR}>×</div>
+            </div>
+          ) : (
+            <div className="qr-upload" onClick={handleUploadQR}>
+              {qrUploading ? (
+                <span className="uploading-text">上传中...</span>
+              ) : (
+                <div className="qr-placeholder">
                   <IconFont name="xiangji" fontClassName="iconfont" classPrefix="icon" />
                 </div>
               )}
@@ -461,7 +528,7 @@ const PublishActivity = () => {
           type="primary"
           block
           loading={submitting}
-          disabled={submitting || imageStatus === 'loading'}
+          disabled={submitting || imageStatus === 'loading' || qrUploading}
           onClick={handleSubmit}
         >
           {submitting ? '发布中...' : '发布活动'}

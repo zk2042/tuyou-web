@@ -208,6 +208,10 @@ export interface Activity {
   joined: boolean
   //+ 是否已关注该活动（详情接口返回）
   isFollowed?: boolean
+  //+ 活动微信群二维码图片地址
+  //+ 仅"当前用户已报名"时详情接口返回；未报名/未登录返回 null/undefined
+  //+ 详情页"已报名"下方二维码区块据此渲染
+  wechatQR?: string
   members?: {
     id: string
     nickname: string

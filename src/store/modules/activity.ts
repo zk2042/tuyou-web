@@ -124,14 +124,15 @@ export const fetchActivityDetail = createAsyncThunk(
 )
 
 //+ 报名/取消报名异步Action
-//+ 后端返回 { isJoined, currentPeople }，前端据此更新本地状态
+//+ 后端返回 { isJoined, currentPeople, wechatQR }，前端据此更新本地状态
+//+ wechatQR：仅报名成功（isJoined=true）时返回，用于报名成功后弹微信群二维码卡片
 export const fetchToggleSignup = createAsyncThunk(
   'activity/fetchToggleSignup',
   async (id: string, { rejectWithValue, signal }) => {
     try {
       const res = await toggleActivitySignupAPI(id, signal)
       if (res.code === 0 || res.code === 200) {
-        return res.data as { isJoined: boolean; currentPeople: number }
+        return res.data as { isJoined: boolean; currentPeople: number; wechatQR?: string }
       }
       return rejectWithValue(res.message || '操作失败')
     } catch (error: any) {
@@ -251,11 +252,14 @@ const activitySlice = createSlice({
       })
       .addCase(fetchToggleSignup.fulfilled, (state, action) => {
         state.signupLoading = false
-        const { isJoined, currentPeople } = action.payload
+        const { isJoined, currentPeople, wechatQR } = action.payload
         //+ 以返回值更新详情页
         if (state.currentActivity) {
           state.currentActivity.joined = isJoined
           state.currentActivity.currentPeople = currentPeople
+          //+ 报名成功（isJoined=true）时后端返回 wechatQR，同步到详情页用于底部二维码区块渲染
+          //+ 取消报名（isJoined=false）时清空，避免已退出用户仍能看到二维码
+          state.currentActivity.wechatQR = isJoined ? (wechatQR || state.currentActivity.wechatQR) : ''
         }
         //+ 同步更新列表页中对应活动的状态（文档第四节：列表页状态同步）
         const listItem = state.activityList.find(a => a.id === state.currentActivity?.id)

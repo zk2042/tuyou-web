@@ -40,6 +40,7 @@ export function createActivityAPI(params: {
   maxPeople: number
   difficulty: string
   activityContent: string
+  wechatQR:string
 }) {
   return post('/activities', params)
 }

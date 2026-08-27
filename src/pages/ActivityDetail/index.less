@@ -160,8 +160,12 @@
   .section-title {
    font-weight: 800;
   }
+  //+ 活动介绍内容区加浅灰背景 + 圆角，与白色页面区分
   .intro-content {
-    padding: 0.6rem 0 0.8rem;
+    padding: 0.4rem 0.5rem;
+    margin: 0.3rem 0 0.5rem;
+   
+    border-radius: 0.3rem;
   }
 
   .intro-line {
@@ -227,6 +231,51 @@
   // }
 }
 
+//+ 微信群二维码区块（仅已报名用户可见，与已报名成员同模式渲染）
+//+ 微信 H5：img 必须加 -webkit-touch-callout: default 启用长按保存菜单
+.wechat-qr-section {
+  background: #fff;
+  margin-top: 3rem;
+  padding: 0 0 0.8rem;
+
+  .section-title {
+    font-weight: 800;
+    padding: 0 0 0.5rem;
+    display: block;
+  }
+
+  .wechat-qr-img-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 0.4rem 0;
+  }
+
+  .wechat-qr-img {
+    width: 6rem;
+    height: 6rem;
+    object-fit: contain;
+    background: #f7f8fa;
+    //+ 启用微信 H5 长按保存菜单（项目约束：不能调相册 API，只能长按保存）
+    -webkit-touch-callout: default;
+  }
+
+  .wechat-qr-tip {
+    font-size: 0.6rem;
+    color: #999;
+    text-align: center;
+    margin: 0.3rem 0 0;
+    line-height: 1.4;
+  }
+  
+}
+.wechat-qr-no-tip {
+  font-size: 0.6rem;
+  color: #999;
+  text-align: center;
+  margin: 5rem 0 0;
+  line-height: 1.4;
+
+}
 //+ 底部操作栏
 .bottom-bar {
   position: fixed;
@@ -359,3 +408,76 @@
      }
 
  }
+
+//+ 报名成功二维码弹层（报名成功后弹卡片展示微信群二维码）
+//+ 用户可点击遮罩或"我知道了"关闭；微信 H5 长按图片保存到相册
+.signup-qr-mask {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.signup-qr-card {
+  width: 50%;
+  background: #fff;
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .signup-qr-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.3rem;
+  }
+
+  .signup-qr-subtitle {
+    font-size: 0.6rem;
+    color: #999;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+
+  .signup-qr-img-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .signup-qr-img {
+    width: 5rem;
+    aspect-ratio: 1 / 1;
+
+    object-fit: contain;
+    background: #f7f8fa;
+    //+ 启用微信 H5 长按保存菜单
+    -webkit-touch-callout: default;
+  }
+
+  .signup-qr-btn {
+    width: 100%;
+    height: 1.4rem;
+    border: none;
+    border-radius: 1.4rem;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.85;
+    }
+  }
+}

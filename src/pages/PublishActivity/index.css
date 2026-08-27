@@ -89,6 +89,76 @@
   line-height: 4rem;
   font-size: 0.6rem;
 }
+.qr-section {
+  padding: 0.6rem 0.8rem;
+  border-top: 1px solid #e7e9ed9d;
+}
+.qr-section .upload-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qr-section .upload-label .upload-hint {
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #999;
+}
+.qr-preview {
+  width: 4rem;
+  height: 4rem;
+  position: relative;
+  display: flex;
+}
+.qr-preview .qr-img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  background: #f7f8fa;
+}
+.qr-preview .qr-remove {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.1rem;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.5rem;
+  cursor: pointer;
+}
+.qr-upload {
+  width: 4rem;
+  height: 4rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.qr-upload .qr-placeholder {
+  text-align: center;
+  color: #d7dbe0;
+  background-color: #f7f8fa;
+  width: 4rem;
+  height: 4rem;
+  line-height: 4rem;
+}
+.qr-upload .uploading-text {
+  text-align: center;
+  color: #999;
+  background-color: #f7f8fa;
+  width: 4rem;
+  height: 4rem;
+  line-height: 4rem;
+  font-size: 0.6rem;
+}
 .field-section {
   border-bottom: 1px solid #e7e9ed9d;
   padding: 0.75rem 0 0.75rem 1.5rem;

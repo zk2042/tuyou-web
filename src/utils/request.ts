@@ -37,6 +37,10 @@ const defaultHeader = {
 
 //+ 是否启用Mock数据
 const isMock = process.env.TARO_APP_USE_MOCK === 'true'
+//+ 是否允许"真实请求失败 → 降级 Mock"：仅开发/测试环境允许
+//+ 生产环境（TARO_APP_ENV=production）一律不降级，让真实错误抛给业务层处理
+//+ 否则后端挂了前端会显示假数据（mockFeed/mockUsers 等），掩盖真实故障
+const allowFallbackToMock = process.env.TARO_APP_ENV !== 'production'
 
 //+ Mock请求处理函数
 function mockRequest<T = any>(url: string, method: Method, data?: any, signal?: AbortSignal | null): Promise<ResponseData<T>> {
@@ -255,6 +259,11 @@ export function request<T = any>(config: RequestConfig): Promise<ResponseData<T>
         return Promise.reject(error)
       }
       //+ 网络/HTTP 错误（非 200 状态码、超时、连接失败等）：降级到 Mock
+      //+ 生产环境禁止降级：后端挂了不能返回假数据，必须把错误抛给业务层
+      if (!allowFallbackToMock) {
+        console.error('[Request] 真实接口失败（生产环境不降级 Mock）:', method, relativeUrl, error?.message || error)
+        return Promise.reject(error)
+      }
       console.warn('[Request] 真实接口失败，降级使用 Mock:', method, relativeUrl, error?.message || error)
       return mockRequest<T>(relativeUrl, method, data, signal)
     })
@@ -439,7 +448,8 @@ export async function upload<T = any>(config: UploadConfig<T>): Promise<Response
       return Promise.reject(err)
     }
     //+ 网络/HTTP/解析错误：若有 mockFn 则降级
-    if (mockFn) {
+    //+ 生产环境禁止降级（与 request 函数保持一致）
+    if (mockFn && allowFallbackToMock) {
       console.warn('[Upload] 真实上传失败，降级 Mock:', relativeUrl, err?.message || err)
       return { ...mockFn(filePath), __fromMock: true }
     }
@@ -522,7 +532,8 @@ export async function uploadBatch<T = any>(config: BatchUploadConfig<T>): Promis
     return await parseUploadResponse<T>(res.status, text, relativeUrl)
   } catch (err: any) {
     if (err && typeof err.code === 'number') return Promise.reject(err)
-    if (mockFn) {
+    //+ 生产环境禁止降级（与 request/upload 保持一致）
+    if (mockFn && allowFallbackToMock) {
       console.warn('[Upload] 批量上传失败，降级 Mock:', relativeUrl, err?.message || err)
       return { ...mockFn(filePaths), __fromMock: true }
     }
