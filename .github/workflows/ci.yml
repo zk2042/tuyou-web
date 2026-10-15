@@ -26,9 +26,14 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run build:h5:prod
+      - name: Build production H5
+        run: pnpm run build:h5:prod
+        env:
+          TARO_APP_API_BASE: /api/v1
       - name: Verify H5 output
-        run: test -s dist/index.html
+        run: |
+          test -s dist/index.html
+          ! grep -R -q 'http://192.168.10.7:84/api/v1' dist
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push'
         with:
