@@ -75,7 +75,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     },
     h5: {
       publicPath: '/',
-      staticDirectory: 'static',
+      staticDirectory: 'h5-static',
       devServer: {
         open: true, // 自动打开浏览器
         port: 10086,
