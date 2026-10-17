@@ -9,6 +9,7 @@ import type { AppDispatch } from '@/store'
 import { useState } from 'react'
 import { useSendCode } from '@/hooks/useSendCode'
 import CodeInput from '@/components/CodeInput'
+import logo from '@/assets/logo.png'
 //+ 封装组件
 import HeaderNavBar from '@/components/HeaderNavBar'
 //+ 导入公共认证样式
@@ -85,7 +86,7 @@ const ForgotPassword = () => {
 
       {/* logo */}
       <div className="auth-logo">
-        <img src="http://192.168.10.7:89/logo.png" alt="logo" />
+        <img src={logo} alt="logo" />
         <p>探索自然，结伴前行</p>
       </div>
 

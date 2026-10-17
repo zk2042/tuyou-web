@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '@/store'
 import { fetchSlides } from '@/store/modules/home'
 import type { SlideItem } from '@/types'
+import logo from '@/assets/logo.png'
 import dayjs from 'dayjs'
 import './index.less'
 
@@ -117,14 +118,13 @@ const Banner = () => {
             <div className="banner-content">
               <div className="banner-bg">
                 <img
-                  src={item.cover || 'http://192.168.10.7:89/logo.png'}
+                  src={item.cover || logo}
                   alt={item.title}
                   className="banner-img"
                   onError={(e) => {
                     //+ 后端返回的 cover 域名不可访问时，回退到本地占位图，避免控制台刷屏 ERR_NAME_NOT_RESOLVED
                     const target = e.currentTarget as HTMLImageElement
-                    const fallback = 'http://192.168.10.7:89/logo.png'
-                    if (target.src !== fallback) target.src = fallback
+                    if (target.getAttribute('src') !== logo) target.src = logo
                   }}
                 />
               </div>
