@@ -1,6 +1,8 @@
 import { Swiper, Cell, ConfigProvider, Indicator, SwiperItem, Image } from '@nutui/nutui-react'
 import { Video } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { useState, useMemo } from 'react'
+import { getEditorialCredit } from '@/utils/editorial'
 import './index.less'
 
 interface DetailBannerProps {
@@ -26,6 +28,9 @@ const DetailBanner = (props: DetailBannerProps) => {
     }
     return []
   }, [videoUrl, images])
+  const currentCredit = Taro.getEnv() === Taro.ENV_TYPE.WEB
+    ? getEditorialCredit(contentItems[currentIndicatorIndex]?.url || contentItems[0]?.url || '')
+    : undefined
 
   // 统一外层 16:9 盒子
   const renderContent = () => {
@@ -79,6 +84,15 @@ const DetailBanner = (props: DetailBannerProps) => {
       <div className="detail-banner-content">
         {renderContent()}
       </div>
+      {currentCredit && (
+        <a
+          className="banner-photo-credit"
+          href={`/editorial/credits.html?key=${encodeURIComponent(currentCredit.key)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="查看图片来源及许可"
+        >图源</a>
+      )}
     </div>
   )
 }
