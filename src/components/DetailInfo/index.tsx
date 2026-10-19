@@ -6,7 +6,6 @@ import { RichText } from '@tarojs/components'
 import Avatar from '../Avatar'
 import Button from '../Button'
 import { normalizeDetailHtml } from '@/utils/html'
-import { stripEditorialAttribution } from '@/utils/editorial'
 import '@/components/MarkdownEditor/index.less'
 import './index.less'
 
@@ -54,10 +53,7 @@ const DetailInfo: React.FC<DetailInfoProps> = ({ detail, actions }) => {
   const avatarUrl = avatar || author?.avatar || ''
 
   const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
-  const contentHtml = useMemo(
-    () => normalizeDetailHtml(isH5 ? stripEditorialAttribution(content, detail?.images) : content),
-    [content, detail?.images, isH5]
-  )
+  const contentHtml = useMemo(() => normalizeDetailHtml(content), [content])
 
   
 

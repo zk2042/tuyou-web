@@ -2,7 +2,7 @@ import { Swiper, Cell, ConfigProvider, Indicator, SwiperItem, Image } from '@nut
 import { Video } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useState, useMemo } from 'react'
-import { getEditorialCredit } from '@/utils/editorial'
+import { getEditorialKey } from '@/utils/editorial'
 import './index.less'
 
 interface DetailBannerProps {
@@ -28,8 +28,8 @@ const DetailBanner = (props: DetailBannerProps) => {
     }
     return []
   }, [videoUrl, images])
-  const currentCredit = Taro.getEnv() === Taro.ENV_TYPE.WEB
-    ? getEditorialCredit(contentItems[currentIndicatorIndex]?.url || contentItems[0]?.url || '')
+  const currentEditorialKey = Taro.getEnv() === Taro.ENV_TYPE.WEB
+    ? getEditorialKey(contentItems[currentIndicatorIndex]?.url || contentItems[0]?.url || '')
     : undefined
 
   // 统一外层 16:9 盒子
@@ -84,10 +84,10 @@ const DetailBanner = (props: DetailBannerProps) => {
       <div className="detail-banner-content">
         {renderContent()}
       </div>
-      {currentCredit && (
+      {currentEditorialKey && (
         <a
           className="banner-photo-credit"
-          href={`/editorial/credits.html?key=${encodeURIComponent(currentCredit.key)}`}
+          href={`/editorial/credits.html?key=${encodeURIComponent(currentEditorialKey)}`}
           target="_blank"
           rel="noopener noreferrer"
           title="查看图片来源及许可"

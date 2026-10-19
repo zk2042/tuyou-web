@@ -42,13 +42,6 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     ],
     defineConstants: {
     },
-    copy: {
-      patterns: process.env.TARO_ENV === 'h5'
-        ? [{ from: 'public/editorial', to: 'dist/editorial' }]
-        : [],
-      options: {
-      }
-    },
     framework: 'react',
     compiler: 'webpack5',
     cache: {

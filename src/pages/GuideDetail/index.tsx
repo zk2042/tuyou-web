@@ -14,7 +14,6 @@ import Taro from '@tarojs/taro'
 import { RichText } from '@tarojs/components'
 import { Dialog } from '@nutui/nutui-react'
 import { normalizeDetailHtml } from '@/utils/html'
-import { stripEditorialAttribution } from '@/utils/editorial'
 import { fetchGuideDetail, toggleLike as toggleGuideLike, toggleFavorite as toggleGuideFavorite, patchGuideDetail, deleteGuide } from '@/store/modules/guide'
 import { toggleProfileFollow } from '@/store/modules/profile'
 import { updateFeedItem } from '@/store/modules/home'
@@ -224,10 +223,7 @@ const GuideDetail = () => {
 
   // Markdown 正文渲染
   const isH5 = Taro.getEnv() === Taro.ENV_TYPE.WEB
-  const contentHtml = useMemo(
-    () => normalizeDetailHtml(isH5 ? stripEditorialAttribution(guideDetail?.content, guideDetail?.images) : guideDetail?.content),
-    [guideDetail?.content, guideDetail?.images, isH5]
-  )
+  const contentHtml = useMemo(() => normalizeDetailHtml(guideDetail?.content), [guideDetail?.content])
 
   //+ 点击关注按钮（本地回调）
   const handleFollowClick = () => {

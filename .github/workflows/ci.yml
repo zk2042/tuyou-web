@@ -36,6 +36,7 @@ jobs:
           test -s src/assets/logo.png
           test -s dist/index.html
           test -s dist/h5-static/images/assets/logo.png
+          test ! -e dist/editorial
           ! grep -R -q 'http://192.168.10.7:84/api/v1' dist
           ! grep -R -q '192.168.10.7:89' dist
       - uses: actions/upload-artifact@v4
