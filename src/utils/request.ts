@@ -1,8 +1,9 @@
 //+ 请求工具封装，基于Taro.request
 
 import Taro from '@tarojs/taro'
-import { getToken, clearToken } from './token'
+import { getCurrentPageFullPath, goToLogin, isPublicRoute } from '@/router'
 import { mockRoutes } from '@/mock'
+import { getToken, clearToken } from './token'
 
 //+ 请求方法类型
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
@@ -41,6 +42,37 @@ const isMock = process.env.TARO_APP_USE_MOCK === 'true'
 //+ 生产环境（TARO_APP_ENV=production）一律不降级，让真实错误抛给业务层处理
 //+ 否则后端挂了前端会显示假数据（mockFeed/mockUsers 等），掩盖真实故障
 const allowFallbackToMock = process.env.TARO_APP_ENV !== 'production'
+
+//+ 401 并发去重：多个请求同时返回 401 时只提示/跳转一次
+let isHandlingUnauthorized = false
+
+//+ 统一处理登录失效：清 token → 提示 → 回登录页
+//+ 保留当前页面路径，登录成功后由 goAfterLogin 自动回跳
+function handleUnauthorized(): void {
+  if (isHandlingUnauthorized) return
+  isHandlingUnauthorized = true
+
+  clearToken()
+
+  const currentPath = getCurrentPageFullPath()
+  //+ 已经在登录/注册等公开页时，只清 token，不重复提示和跳转
+  if (isPublicRoute(currentPath)) {
+    isHandlingUnauthorized = false
+    return
+  }
+
+  Taro.showToast({
+    title: '登录已过期，请重新登录',
+    icon: 'none',
+    duration: 2000
+  })
+
+  setTimeout(() => {
+    goToLogin(currentPath)
+    //+ 跳转完成后复位，允许后续再次处理 401
+    setTimeout(() => { isHandlingUnauthorized = false }, 1500)
+  }, 500)
+}
 
 //+ Mock请求处理函数
 function mockRequest<T = any>(url: string, method: Method, data?: any, signal?: AbortSignal | null): Promise<ResponseData<T>> {
@@ -150,34 +182,16 @@ function responseInterceptor<T = any>(res: any): Promise<ResponseData<T>> {
       if (data.code === 0 || data.code === 200) {
         resolve(data)
       } else if (data.code === 401) {
-        //+ token 过期/未授权（HTTP 200 + code 401）：清 token + Toast + 跳登录页
-        //+ 用 redirectTo 避免返回栈中残留已登出页面
-        clearToken()
-        Taro.showToast({
-          title: '登录已过期，请重新登录',
-          icon: 'none',
-          duration: 2000
-        })
-        //+ 延迟跳转，让 Toast 显示一下再跳
-        setTimeout(() => {
-          Taro.redirectTo({ url: '/pages/Login/index' })
-        }, 500)
+        //+ token 过期/未授权（HTTP 200 + code 401）：统一清 token + Toast + 跳登录页
+        handleUnauthorized()
         reject(data)
       } else {
         //+ 其他业务错误：透传完整的响应数据，由业务层处理 Toast
         reject(data)
       }
     } else if (res.statusCode === 401) {
-      //+ HTTP 401：清 token + Toast + 跳登录页
-      clearToken()
-      Taro.showToast({
-        title: '登录已过期，请重新登录',
-        icon: 'none',
-        duration: 2000
-      })
-      setTimeout(() => {
-        Taro.redirectTo({ url: '/pages/Login/index' })
-      }, 500)
+      //+ HTTP 401：统一清 token + Toast + 跳登录页
+      handleUnauthorized()
       reject(res)
     } else {
       //+ HTTP 错误：构造标准错误对象，业务层可通过 error.message 获取提示
@@ -336,9 +350,7 @@ async function parseUploadResponse<T = any>(
   _relativeUrl: string
 ): Promise<ResponseData<T>> {
   if (statusCode === 401) {
-    clearToken()
-    Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none', duration: 2000 })
-    setTimeout(() => { Taro.redirectTo({ url: '/pages/Login/index' }) }, 500)
+    handleUnauthorized()
     throw new Error('401 Unauthorized')
   }
   if (statusCode !== 200) {
@@ -349,11 +361,9 @@ async function parseUploadResponse<T = any>(
     if (data.code === 0 || data.code === 200) {
       return data
     }
-    //+ token 过期/未授权（HTTP 200 + code 401）：清 token + Toast + 跳登录页
+    //+ token 过期/未授权（HTTP 200 + code 401）：统一清 token + Toast + 跳登录页
     if (data.code === 401) {
-      clearToken()
-      Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none', duration: 2000 })
-      setTimeout(() => { Taro.redirectTo({ url: '/pages/Login/index' }) }, 500)
+      handleUnauthorized()
       throw new Error('401 Unauthorized')
     }
     //+ 其他业务错误（如文件过大/格式错误），透传给调用方 reject（不降级 Mock）
