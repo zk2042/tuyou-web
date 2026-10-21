@@ -7,9 +7,11 @@ import { Button, Input } from '@nutui/nutui-react'
 import { Navigator } from '@tarojs/components'
 import { useDispatch } from 'react-redux'
 import Taro from '@tarojs/taro'
-import { fetchLogin } from '@/store/modules/user'
+import { fetchLogin, getUserInfo } from '@/store/modules/user'
 import type { AppDispatch } from '@/store'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { goAfterLogin } from '@/router'
+import { isLoggedIn } from '@/utils/token'
 import { useSendCode } from '@/hooks/useSendCode'
 import { useCaptcha } from '@/hooks/useCaptcha'
 import CodeInput from '@/components/CodeInput'
@@ -32,12 +34,38 @@ const Login = () => {
   const [code, setCode] = useState('')
   //+ 图形验证码输入值
   const [captchaCode, setCaptchaCode] = useState('')
+  //+ 进入登录页时如果本地已有 token（例如从域名根路径重新打开 H5），先静默校验一次：
+  //+ 有效 → 直接回到首页/上次页面；无效 → 响应拦截器会清 token，留在登录页重新登录
+  const [restoringSession, setRestoringSession] = useState(() => isLoggedIn())
+
+  //+ 恢复登录态：仅在进入页面时存在 token 的情况下执行一次
+  //+ 避免已登录用户因为根路径默认落到登录页而被迫重新登录
+  useEffect(() => {
+    if (!restoringSession) return
+    let active = true
+
+    const restoreSession = async () => {
+      const result: any = await dispatch(getUserInfo())
+      if (!active) return
+      if (result.type === 'user/getUserInfo/fulfilled') {
+        goAfterLogin().catch(() => {
+          if (active) setRestoringSession(false)
+        })
+      } else {
+        setRestoringSession(false)
+      }
+    }
+
+    restoreSession()
+    return () => { active = false }
+  }, [dispatch, restoringSession])
 
   //+ 验证码发送逻辑复用
   const { codeSent, codeCountdown, sendCode } = useSendCode('login')
   //+ 图形验证码：自动拉取一次，refresh 可点击图片刷新
   //+ 仅密码登录模式需要，切换到验证码登录时不重复请求（hook 内部 autoFetch 只执行一次）
-  const { captchaImage, captchaId, loading: captchaLoading, refresh: refreshCaptcha } = useCaptcha(true)
+  //+ 恢复登录态期间不拉取图形验证码；校验失败后再自动拉取
+  const { captchaImage, captchaId, loading: captchaLoading, refresh: refreshCaptcha } = useCaptcha(!restoringSession)
 
   //+ 切换登录模式
   const toggleMode = () => {
@@ -109,7 +137,8 @@ const Login = () => {
     if (result.type === 'user/fetchLogin/fulfilled') {
       Taro.showToast({ title: '登录成功', icon: 'success' })
       setTimeout(() => {
-        Taro.redirectTo({ url: '/pages/Home/index' })
+        //+ 优先回到被 401 拦截前/未登录时访问的页面，没有则回首页
+        goAfterLogin()
       }, 1500)
     } else {
       const errMsg = result.payload || '登录失败，请检查手机号和密码'
@@ -120,6 +149,15 @@ const Login = () => {
         setCaptchaCode('')
       }
     }
+  }
+
+  //+ 恢复登录态期间显示占位，避免已登录用户看到登录表单闪一下
+  if (restoringSession) {
+    return (
+      <div className='auth-container'>
+        <div className='auth-session-restoring'>正在恢复登录状态...</div>
+      </div>
+    )
   }
 
   return (

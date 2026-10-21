@@ -1,4 +1,7 @@
 //+ 路由常量定义
+import Taro from '@tarojs/taro'
+import { getToken } from '@/utils/token'
+
 export const ROUTE_PATHS = {
   LOGIN: '/pages/Login/index',
   REGISTER: '/pages/Register/index',
@@ -44,25 +47,31 @@ export const AUTH_REQUIRED_ROUTES: RouteKey[] = []
 //+ 白名单路由（无需登录即可访问）
 export const PUBLIC_ROUTES: RouteKey[] = ['LOGIN', 'REGISTER', 'FORGOT_PASSWORD', 'LOGOUT']
 
-import Taro from '@tarojs/taro'
-import { getToken } from '@/utils/token'
-
 //+ 判断是否已登录
 export function isAuthenticated(): boolean {
   return !!getToken()
 }
 
-//+ 判断路由路径是否属于白名单（基于 path 前缀匹配，兼容 params/query）
+//+ H5 路由别名 → Taro 页面路径（兼容 getCurrentPages 返回别名的情况）
+const ALIAS_TO_PAGE_PATH: Record<string, string> = {
+  [ROUTE_ALIAS.LOGIN]: ROUTE_PATHS.LOGIN,
+  [ROUTE_ALIAS.REGISTER]: ROUTE_PATHS.REGISTER,
+  [ROUTE_ALIAS.FORGOT_PASSWORD]: ROUTE_PATHS.FORGOT_PASSWORD,
+  [ROUTE_ALIAS.LOGOUT]: ROUTE_PATHS.LOGOUT
+}
+
+//+ 判断路由路径是否属于白名单（基于 path 前缀匹配，兼容别名/params/query）
 //+ 白名单页面：登录 / 注册 / 忘记密码 / 登出
 export function isPublicRoute(path: string): boolean {
-  const normalized = `/${path.replace(/^\//, '')}`
+  const normalized = `/${path.split('?')[0].replace(/^\//, '')}`
+  const canonical = ALIAS_TO_PAGE_PATH[normalized] || normalized
   const publicPaths = [
     ROUTE_PATHS.LOGIN,
     ROUTE_PATHS.REGISTER,
     ROUTE_PATHS.FORGOT_PASSWORD,
     ROUTE_PATHS.LOGOUT
   ]
-  return publicPaths.some(p => normalized.startsWith(p))
+  return publicPaths.some(p => canonical.startsWith(p))
 }
 
 //+ 获取当前活动页面的完整路径（含 query，用于登录后回跳）
@@ -122,7 +131,8 @@ export function routerNavigateBack(delta: number = 1): Promise<TaroGeneral.Callb
 export function goAfterLogin(): Promise<TaroGeneral.CallbackResult> {
   const redirect = Taro.getStorageSync('login_redirect') || ''
   try { Taro.removeStorageSync('login_redirect') } catch (_) { /* ignore */ }
-  if (redirect && typeof redirect === 'string') {
+  //+ 白名单页面不作为回跳目标，避免登录后又跳回登录页
+  if (redirect && typeof redirect === 'string' && !isPublicRoute(redirect)) {
     const parsed = String(redirect)
     //+ 跳 tabBar 页：若包含 HOME/ACTIVITY/MESSAGE/PROFILE 前缀则走 switchTab
     const pure = parsed.split('?')[0].replace(/^\//, '')
@@ -132,7 +142,8 @@ export function goAfterLogin(): Promise<TaroGeneral.CallbackResult> {
       'pages/Message/index': 'MESSAGE',
       'pages/Profile/index': 'PROFILE'
     }
-    if (tabMap[pure]) return routerSwitchTab(tabMap[pure])
+    //+ 本项目 H5 使用自定义 TabBar，部分容器不支持 switchTab 时兜底回首页
+    if (tabMap[pure]) return routerSwitchTab(tabMap[pure]).catch(() => routerRedirectTo('HOME'))
     //+ 普通页：redirectTo 直接跳到原路径（路径已含 query）
     return Taro.redirectTo({ url: parsed }).catch(() => routerRedirectTo('HOME'))
   }
