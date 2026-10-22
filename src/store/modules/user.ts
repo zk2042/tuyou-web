@@ -1,6 +1,6 @@
 //+ 用户状态管理Slice
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { setToken, clearToken } from '@/utils/token'
+import { setTokens, clearToken } from '@/utils/token'
 import {
   loginAPI,
   getMemberInfoAPI,
@@ -73,9 +73,10 @@ export const fetchLogin = createAsyncThunk(
       const res = await loginAPI(params)
 
       if (res.code === 0 || res.code === 200) {
-        //+ 响应字段 member（与API文档一致）
-        if (res.data.token) {
-          setToken(res.data.token)
+        //+ 保存访问令牌 + 刷新令牌（token 为后端兼容字段）
+        const accessToken = res.data.access_token || res.data.token
+        if (accessToken) {
+          setTokens(accessToken, res.data.refresh_token)
         }
         return res.data
       } else {
@@ -94,9 +95,10 @@ export const fetchRegister = createAsyncThunk(
     try {
       const res = await registerAPI(params)
       if (res.code === 0 || res.code === 200) {
-        //+ 响应字段 member（与API文档一致）
-        if (res.data.token) {
-          setToken(res.data.token)
+        //+ 注册接口当前不返回令牌；若后端调整为一并返回，则直接保存
+        const accessToken = res.data?.access_token || res.data?.token
+        if (accessToken) {
+          setTokens(accessToken, res.data?.refresh_token)
         }
         return res.data
       } else {

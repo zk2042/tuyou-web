@@ -19,6 +19,9 @@
 //+   未读数：event:unread
 //+           data:{"total":5,"interactions":4,"system":1}
 //+   心跳：:ping（注释行，忽略）
+import { getToken } from './token'
+import { refreshAccessToken, handleUnauthorized } from './request'
+
 export type SSEEventHandler = (event: string, data: Record<string, any>) => void
 export type SSEReconnectHandler = () => void
 
@@ -35,6 +38,8 @@ let currentToken: string | null = null
 //+ 是否曾经成功连接过（用于区分"首次连接"与"断线重连"）
 //+ 首次连接成功时不触发 reconnect 回调，避免与 app 启动/页面挂载重复请求未读数
 let hasConnectedBefore = false
+//+ 访问令牌过期后已连续刷新重连的次数，避免异常情况下无限循环
+let authRefreshCount = 0
 
 //+ Mock 模式下用 setTimeout 模拟 SSE 推送
 let mockTimer: ReturnType<typeof setTimeout> | null = null
@@ -192,6 +197,24 @@ async function connectRealSSE(token: string): Promise<void> {
       signal: abortController.signal,
     })
 
+    //+ 访问令牌过期：刷新令牌后立即用新令牌重连（最多连续 2 次，避免异常循环）
+    if (response.status === 401) {
+      if (authRefreshCount >= 2) {
+        handleUnauthorized()
+        disconnectSSE()
+        return
+      }
+      authRefreshCount += 1
+      const newToken = await refreshAccessToken()
+      if (!newToken) {
+        handleUnauthorized()
+        disconnectSSE()
+        return
+      }
+      reconnectWithToken(newToken)
+      return
+    }
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
@@ -204,6 +227,7 @@ async function connectRealSSE(token: string): Promise<void> {
     isConnecting = false
     isConnected = true
     reconnectDelay = 1000
+    authRefreshCount = 0
     //+ 首次连接不触发 reconnect 回调，只有断线重连后才触发
     if (hasConnectedBefore) {
       reconnectHandlers.forEach(handler => {
@@ -268,9 +292,30 @@ async function connectRealSSE(token: string): Promise<void> {
   }
 }
 
+//+ 使用新令牌重建连接（不重置刷新计数，避免异常情况下无限刷新）
+function reconnectWithToken(token: string): void {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+  if (abortController) {
+    try { abortController.abort() } catch (_) { /* ignore */ }
+    abortController = null
+  }
+  currentToken = token
+  isConnecting = true
+  isConnected = false
+  connectRealSSE(token)
+}
+
 //+ 调度重连（指数退避）
 function scheduleReconnect(): void {
   if (reconnectTimer) return
+  //+ 优先使用本地最新的访问令牌（可能已被刷新逻辑更新）
+  const latestToken = getToken()
+  if (latestToken) {
+    currentToken = latestToken
+  }
   if (!currentToken) return
 
   reconnectTimer = setTimeout(() => {
@@ -286,13 +331,14 @@ function scheduleReconnect(): void {
 //+ 建立 SSE 连接
 export function connectSSE(token: string): void {
   if (!token) return
-  currentToken = token
+  const latestToken = getToken() || token
+  currentToken = latestToken
 
   //+ 关闭已存在的连接
   if (abortController || mockTimer) {
     disconnectSSE()
     //+ disconnectSSE 会清空 currentToken，重新设置
-    currentToken = token
+    currentToken = latestToken
   }
 
   //+ Mock 模式：用 setTimeout 模拟推送，不走真实连接
@@ -304,7 +350,7 @@ export function connectSSE(token: string): void {
 
   //+ 真实模式：fetch + ReadableStream
   isConnecting = true
-  connectRealSSE(token)
+  connectRealSSE(latestToken)
 }
 
 //+ 主动断开 SSE 连接
@@ -329,6 +375,7 @@ export function disconnectSSE(): void {
   reconnectDelay = 1000
   //+ 重置首次连接标志：登出/主动断开后，下次连接视为首次连接
   hasConnectedBefore = false
+  authRefreshCount = 0
   //+ 不清理 eventHandlers / reconnectHandlers：由 onSSEEvent/off 管理
   currentToken = null
 }

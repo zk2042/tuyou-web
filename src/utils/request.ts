@@ -3,7 +3,7 @@
 import Taro from '@tarojs/taro'
 import { getCurrentPageFullPath, goToLogin, isPublicRoute } from '@/router'
 import { mockRoutes } from '@/mock'
-import { getToken, clearToken } from './token'
+import { getToken, getRefreshToken, setTokens, clearToken } from './token'
 
 //+ 请求方法类型
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
@@ -19,6 +19,8 @@ interface RequestConfig {
   //+ 真实请求：调用 requestTask.abort() 释放连接
   //+ Mock 模式：监听 signal.aborted 提前 reject AbortError
   signal?: AbortSignal | null
+  //+ 内部使用：本次请求不再尝试刷新令牌，避免重试后再次 401 造成循环
+  skipAuthRefresh?: boolean
 }
 
 //+ 响应数据接口
@@ -48,7 +50,7 @@ let isHandlingUnauthorized = false
 
 //+ 统一处理登录失效：清 token → 提示 → 回登录页
 //+ 保留当前页面路径，登录成功后由 goAfterLogin 自动回跳
-function handleUnauthorized(): void {
+export function handleUnauthorized(): void {
   if (isHandlingUnauthorized) return
   isHandlingUnauthorized = true
 
@@ -72,6 +74,88 @@ function handleUnauthorized(): void {
     //+ 跳转完成后复位，允许后续再次处理 401
     setTimeout(() => { isHandlingUnauthorized = false }, 1500)
   }, 500)
+}
+
+//+ ========== 双 Token：访问令牌过期后自动刷新 ==========
+//+ 刷新接口路径（前台会员）
+const REFRESH_TOKEN_PATH = '/auth/refresh'
+//+ 这些公开认证接口不触发自动刷新（失败通常与登录态无关）
+const REFRESH_EXCLUDE_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/reset-password',
+  '/auth/captcha',
+  REFRESH_TOKEN_PATH
+]
+
+//+ 刷新令牌请求去重：多个请求同时 401 时只发起一次刷新
+let refreshTokenPromise: Promise<string | null> | null = null
+
+//+ 是否需要尝试刷新访问令牌
+function shouldRefreshAccessToken(url: string): boolean {
+  if (!getRefreshToken()) return false
+  const path = url.split('?')[0]
+  return !REFRESH_EXCLUDE_PATHS.some(exclude => path.endsWith(exclude))
+}
+
+//+ 调用刷新接口换取新的令牌对，成功返回新的访问令牌
+async function requestNewTokens(): Promise<string | null> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return null
+
+  const baseURL = process.env.TARO_APP_API_BASE || ''
+  try {
+    const res = await Taro.request({
+      url: `${baseURL}${REFRESH_TOKEN_PATH}`,
+      method: 'POST',
+      header: { ...defaultHeader },
+      data: { refresh_token: refreshToken },
+      timeout: 15000
+    })
+
+    if (res.statusCode !== 200) return null
+
+    const body = res.data as ResponseData<any>
+    if (!body || (body.code !== 0 && body.code !== 200) || !body.data) return null
+
+    const accessToken = body.data.access_token || body.data.token
+    if (!accessToken) return null
+
+    //+ 刷新令牌随访问令牌一起轮换；后端未返回时保留原刷新令牌
+    setTokens(accessToken, body.data.refresh_token || refreshToken)
+    return accessToken
+  } catch (error) {
+    console.warn('[Request] 刷新令牌失败:', error)
+    return null
+  }
+}
+
+//+ 刷新访问令牌（并发去重）
+export function refreshAccessToken(): Promise<string | null> {
+  if (!refreshTokenPromise) {
+    refreshTokenPromise = requestNewTokens().finally(() => {
+      refreshTokenPromise = null
+    })
+  }
+  return refreshTokenPromise
+}
+
+//+ 判断错误是否为 401（兼容 HTTP 401 与 HTTP 200 + code 401）
+function isUnauthorizedError(error: any): boolean {
+  return error?.code === 401 || error?.statusCode === 401
+}
+
+//+ 将响应错误统一转换为带 code/message/data 的 Error，便于业务层与刷新逻辑判断
+function createResponseError(res: any): any {
+  const body = res?.data
+  const err: any = new Error(body?.message || `请求错误 ${res?.statusCode || 0}`)
+  //+ 仅业务响应体带 code 时设置 code；纯 HTTP 错误保留 statusCode，交给 Mock 降级逻辑处理
+  if (typeof body?.code === 'number') {
+    err.code = body.code
+    err.data = body.data
+  }
+  err.statusCode = res?.statusCode
+  return err
 }
 
 //+ Mock请求处理函数
@@ -173,30 +257,21 @@ function requestInterceptor(config: RequestConfig): RequestConfig {
 }
 
 //+ 响应拦截器：处理错误和数据
-//+ 注意：业务错误（code != 0/200）不再在此处 Toast，由业务层（store/页面）统一处理
-//+       例外：code === 401（token过期/未授权）在此处统一处理 Toast + 跳转登录页
+//+ 注意：业务错误（code != 0/200）不再在此处 Toast，由业务层（store/页面）统一处理；
+//+       401 由 request() 统一尝试刷新令牌，刷新失败后再 Toast + 跳转登录页
 function responseInterceptor<T = any>(res: any): Promise<ResponseData<T>> {
   return new Promise((resolve, reject) => {
     if (res.statusCode === 200) {
       const data = res.data as ResponseData<T>
-      if (data.code === 0 || data.code === 200) {
+      if (data && (data.code === 0 || data.code === 200)) {
         resolve(data)
-      } else if (data.code === 401) {
-        //+ token 过期/未授权（HTTP 200 + code 401）：统一清 token + Toast + 跳登录页
-        handleUnauthorized()
-        reject(data)
       } else {
-        //+ 其他业务错误：透传完整的响应数据，由业务层处理 Toast
-        reject(data)
+        //+ 业务错误：构造带 code/message/data 的错误对象，便于刷新令牌与业务层判断
+        reject(createResponseError(res))
       }
-    } else if (res.statusCode === 401) {
-      //+ HTTP 401：统一清 token + Toast + 跳登录页
-      handleUnauthorized()
-      reject(res)
     } else {
       //+ HTTP 错误：构造标准错误对象，业务层可通过 error.message 获取提示
-      const err = new Error(`请求错误 ${res.statusCode}`)
-      reject(err)
+      reject(createResponseError(res))
     }
   })
 }
@@ -204,8 +279,11 @@ function responseInterceptor<T = any>(res: any): Promise<ResponseData<T>> {
 //+ 发起请求
 //+ 策略：先走真实后端，失败自动降级到 Mock（除非全局开启 Mock）
 export function request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
-  const { url, method = 'GET', data, header, timeout = 30000, signal } = config
-  
+  const { url, method = 'GET', data, header, timeout = 30000, signal, skipAuthRefresh = false } = config
+
+  //+ 本次请求是否携带了访问令牌（决定 401 时是否需要走登录失效流程）
+  const hadAuthToken = !!getToken()
+
   //+ 已中止直接拒绝（避免进入真实请求 / mockRequest）
   if (signal?.aborted) {
     const err: any = new DOMException('Aborted', 'AbortError')
@@ -264,11 +342,26 @@ export function request<T = any>(config: RequestConfig): Promise<ResponseData<T>
   })
 
   return realRequest
-    .catch((error) => {
+    .catch(async (error) => {
       //+ AbortError：直接抛出，不降级 Mock
       if (error?.name === 'AbortError') return Promise.reject(error)
-      //+ 业务错误（HTTP 200 但 code != 0/200）：responseInterceptor reject 的是响应数据对象 {code, message, data}
-      //+ 此类错误不应降级 Mock，直接抛出给业务层处理（如报名满员、不在报名时间等）
+
+      //+ 401：访问令牌过期/未授权 → 尝试用刷新令牌换新令牌后重试一次
+      if (isUnauthorizedError(error)) {
+        if (!skipAuthRefresh && hadAuthToken && shouldRefreshAccessToken(url)) {
+          const newAccessToken = await refreshAccessToken()
+          if (newAccessToken) {
+            return request<T>({ ...config, skipAuthRefresh: true })
+          }
+        }
+        //+ 刷新失败（或无需刷新）：统一清 token + Toast + 跳登录页
+        if (hadAuthToken) {
+          handleUnauthorized()
+        }
+        return Promise.reject(error)
+      }
+
+      //+ 其他业务错误（HTTP 200 但 code != 0/200）：不降级 Mock，直接抛出给业务层处理
       if (error && typeof error.code === 'number') {
         return Promise.reject(error)
       }
@@ -350,31 +443,34 @@ async function parseUploadResponse<T = any>(
   _relativeUrl: string
 ): Promise<ResponseData<T>> {
   if (statusCode === 401) {
-    handleUnauthorized()
-    throw new Error('401 Unauthorized')
+    const err: any = new Error('401 Unauthorized')
+    err.code = 401
+    err.statusCode = 401
+    throw err
   }
   if (statusCode !== 200) {
-    throw new Error(`HTTP ${statusCode}`)
+    const err: any = new Error(`HTTP ${statusCode}`)
+    err.statusCode = statusCode
+    throw err
   }
+
+  let data: ResponseData<T>
   try {
-    const data = JSON.parse(rawData) as ResponseData<T>
-    if (data.code === 0 || data.code === 200) {
-      return data
-    }
-    //+ token 过期/未授权（HTTP 200 + code 401）：统一清 token + Toast + 跳登录页
-    if (data.code === 401) {
-      handleUnauthorized()
-      throw new Error('401 Unauthorized')
-    }
-    //+ 其他业务错误（如文件过大/格式错误），透传给调用方 reject（不降级 Mock）
-    return Promise.reject(data) as any
-  } catch (parseErr: any) {
-    //+ parseErr 是之前 reject 的业务错误数据对象（带 code/message），直接向上抛
-    if (parseErr && typeof parseErr.code === 'number') {
-      return Promise.reject(parseErr) as any
-    }
+    data = JSON.parse(rawData) as ResponseData<T>
+  } catch {
     throw new Error('响应解析失败')
   }
+
+  if (data.code === 0 || data.code === 200) {
+    return data
+  }
+
+  //+ 业务错误（含 HTTP 200 + code 401）：构造带 code/message 的错误，由调用方统一处理
+  const err: any = new Error(data.message || '上传失败')
+  err.code = data.code
+  err.statusCode = statusCode
+  err.data = data.data
+  throw err
 }
 
 //+ 文件上传：multipart/form-data
@@ -395,7 +491,7 @@ export async function upload<T = any>(config: UploadConfig<T>): Promise<Response
   } = config
 
   const { fullUrl, relativeUrl } = resolveUrl(url)
-  const authHeader = buildAuthHeader(header)
+  const hadAuthToken = !!getToken()
 
   //+ 全局 Mock 模式：直接调用 mockFn（上传不走 mockRoutes）
   if (isMock) {
@@ -415,7 +511,9 @@ export async function upload<T = any>(config: UploadConfig<T>): Promise<Response
     typeof FormData !== 'undefined' &&
     (filePath.startsWith('blob:') || filePath.startsWith('data:'))
 
-  try {
+  const performUpload = async (): Promise<ResponseData<T>> => {
+    const authHeader = buildAuthHeader(header)
+
     if (isH5Blob) {
       const blob = await fetch(filePath).then(r => r.blob())
       const fd = new FormData()
@@ -452,8 +550,31 @@ export async function upload<T = any>(config: UploadConfig<T>): Promise<Response
       header: authHeader
     })
     return await parseUploadResponse<T>(uploadRes.statusCode, uploadRes.data, relativeUrl)
+  }
+
+  try {
+    return await performUpload()
   } catch (err: any) {
-    //+ 业务错误（{code, message}）：不降级 Mock，透传
+    //+ 401：尝试刷新访问令牌后重试一次
+    if (isUnauthorizedError(err)) {
+      if (hadAuthToken && shouldRefreshAccessToken(url)) {
+        const newAccessToken = await refreshAccessToken()
+        if (newAccessToken) {
+          try {
+            return await performUpload()
+          } catch (retryErr: any) {
+            err = retryErr
+          }
+        }
+      }
+      //+ 刷新失败（或无需刷新）：统一清 token + Toast + 跳登录页
+      if (hadAuthToken) {
+        handleUnauthorized()
+      }
+      return Promise.reject(err)
+    }
+
+    //+ 其他业务错误（{code, message}）：不降级 Mock，透传
     if (err && typeof err.code === 'number') {
       return Promise.reject(err)
     }
@@ -490,7 +611,7 @@ export interface BatchUploadConfig<T> {
 export async function uploadBatch<T = any>(config: BatchUploadConfig<T>): Promise<ResponseData<T>> {
   const { url, filePaths, name = 'files', formData, header, mockFn } = config
   const { fullUrl, relativeUrl } = resolveUrl(url)
-  const authHeader = buildAuthHeader(header)
+  const hadAuthToken = !!getToken()
 
   //+ 全局 Mock
   if (isMock) {
@@ -508,7 +629,7 @@ export async function uploadBatch<T = any>(config: BatchUploadConfig<T>): Promis
     typeof fetch === 'function' &&
     typeof FormData !== 'undefined'
 
-  try {
+  const performUpload = async (): Promise<ResponseData<T>> => {
     if (!isH5) {
       //+ 非 H5：Taro 暂无原生批量上传 API，抛错让调用方兜底（逐张走 upload）
       throw new Error('batch-not-supported')
@@ -535,12 +656,34 @@ export async function uploadBatch<T = any>(config: BatchUploadConfig<T>): Promis
 
     const res = await fetch(fullUrl, {
       method: 'POST',
-      headers: authHeader,
+      headers: buildAuthHeader(header),
       body: fd
     })
     const text = await res.text()
     return await parseUploadResponse<T>(res.status, text, relativeUrl)
+  }
+
+  try {
+    return await performUpload()
   } catch (err: any) {
+    //+ 401：尝试刷新访问令牌后重试一次
+    if (isUnauthorizedError(err)) {
+      if (hadAuthToken && shouldRefreshAccessToken(url)) {
+        const newAccessToken = await refreshAccessToken()
+        if (newAccessToken) {
+          try {
+            return await performUpload()
+          } catch (retryErr: any) {
+            err = retryErr
+          }
+        }
+      }
+      if (hadAuthToken) {
+        handleUnauthorized()
+      }
+      return Promise.reject(err)
+    }
+
     if (err && typeof err.code === 'number') return Promise.reject(err)
     //+ 生产环境禁止降级（与 request/upload 保持一致）
     if (mockFn && allowFallbackToMock) {
