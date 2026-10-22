@@ -1,6 +1,6 @@
 //+ 路由常量定义
 import Taro from '@tarojs/taro'
-import { getToken } from '@/utils/token'
+import { isLoggedIn } from '@/utils/token'
 
 export const ROUTE_PATHS = {
   LOGIN: '/pages/Login/index',
@@ -49,7 +49,7 @@ export const PUBLIC_ROUTES: RouteKey[] = ['LOGIN', 'REGISTER', 'FORGOT_PASSWORD'
 
 //+ 判断是否已登录
 export function isAuthenticated(): boolean {
-  return !!getToken()
+  return isLoggedIn()
 }
 
 //+ H5 路由别名 → Taro 页面路径（兼容 getCurrentPages 返回别名的情况）
