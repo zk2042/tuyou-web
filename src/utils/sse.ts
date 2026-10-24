@@ -353,6 +353,24 @@ export function connectSSE(token: string): void {
   connectRealSSE(latestToken)
 }
 
+//+ 确保 SSE 已连接（用于登录后补连）
+//+ 背景：useSSE 只在 App 首次挂载时执行一次，此时如果还在登录页、本地没有 token，
+//+ 就不会建连；登录成功后 Taro 走的是 SPA 路由跳转，App 不会重新挂载，
+//+ 因此必须在 token 出现后主动补一次连接，否则要等用户手动刷新页面才收得到推送。
+//+ 已连接 / 连接中 / 已安排重连时直接返回，避免打断现有的退避重连。
+export function ensureSSEConnection(token: string): void {
+  if (!token) return
+  if (isConnected) {
+    // 账号切换/令牌轮换后，已有连接可能仍绑定旧会员或旧令牌，主动重连一次
+    if (currentToken && currentToken !== token) {
+      connectSSE(token)
+    }
+    return
+  }
+  if (isConnecting || reconnectTimer !== null) return
+  connectSSE(getToken() || token)
+}
+
 //+ 主动断开 SSE 连接
 //+ 注意：不清理 eventHandlers / reconnectHandlers，它们的注册/注销由
 //+ onSSEEvent / onSSEReconnect 返回的 off 函数管理（组件 unmount 时调用）

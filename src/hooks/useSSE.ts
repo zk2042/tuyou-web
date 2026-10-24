@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   connectSSE,
   disconnectSSE,
+  ensureSSEConnection,
   onSSEEvent,
   onSSEReconnect
 } from '@/utils/sse'
@@ -19,9 +20,7 @@ import type { RootState, AppDispatch } from '@/store'
 import {
   fetchUnreadCount,
   showToast,
-  hideToast,
   clearToastCooldown,
-  setShowNewMessageTip,
   updateUnreadFromSSE,
   handleSSEEvent,
   SSE_EVENT,
@@ -133,11 +132,17 @@ export function useSSE() {
       connectSSE(token)
     }
 
-    //+ 2. 登出时断开连接（监听 token 变化）
+    //+ 2. 监听 token 变化：
+    //+    登出 → 断开连接；
+    //+    登录 → 补建连接（登录走 SPA 路由，App 不会重新挂载，首次挂载时无 token 就不会建连）
+    //+    断线且不在重连等待中 → 由 ensureSSEConnection 兜底恢复
     const checkTokenInterval = setInterval(() => {
-      if (!isLoggedIn()) {
+      const token = getToken()
+      if (!token) {
         disconnectSSE()
+        return
       }
+      ensureSSEConnection(token)
     }, 2000)
 
     //+ 3. 注册 SSE 事件处理器（始终调用 ref 里最新的 handleSSEMessage）
