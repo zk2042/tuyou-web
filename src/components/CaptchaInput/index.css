@@ -2,15 +2,15 @@
   position: relative;
 }
 .auth-form-item-captcha .auth-input-captcha {
-  padding-right: 4.5rem !important;
+  padding-right: 5.5rem !important;
 }
 .captcha-image-btn {
   position: absolute;
   right: 0.4rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 3.5rem;
-  height: 4.6vh;
+  width: min(4.8rem, 13.8vh);
+  height: min(1.6rem, 4.6vh);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,9 +24,10 @@
   cursor: wait;
 }
 .captcha-img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 0.3rem;
 }
 .captcha-loading-text {
@@ -35,10 +36,6 @@
   white-space: nowrap;
 }
 @media screen and (min-width: 768px) {
-  .captcha-image-btn {
-    height: 4vh;
-    width: 3rem;
-  }
   .captcha-loading-text {
     font-size: 0.5rem;
   }
