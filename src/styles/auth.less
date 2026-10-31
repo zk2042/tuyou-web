@@ -16,19 +16,28 @@
     overflow: hidden;
 }
 
-//+ Logo区域样式
+//+ Logo区域样式：随视口等比缩放，避免小屏或横屏下图标溢出
 .auth-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 0 1rem;
     text-align: center;
-    margin-top: 15vh;
+    margin-top: clamp(2rem, 15vh, 6rem);
     flex-shrink: 0;
 
     img {
-        width: calc(4.5rem*1.2);
-        height: calc(4.8rem*1.25);
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: min(5.4rem, 32vmin);
+        max-height: 24vh;
+        object-fit: contain;
     }
 
     p {
-        font-size: 0.7rem;
+        font-size: clamp(0.6rem, 3.6vw, 0.75rem);
         letter-spacing: 0.01rem;
         color: #368848;
         font-weight: 350;
