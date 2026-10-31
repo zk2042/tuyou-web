@@ -6,10 +6,12 @@
 }
 
 //+ 容器基础样式
+//+ 使用动态视口高度，避免手机浏览器地址栏/工具栏遮挡底部内容
 .auth-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
     position: relative;
     align-items: center;
     background-color: #fff;
@@ -116,6 +118,7 @@
 .auth-link {
     position: absolute;
     bottom: 2vh;
+    bottom: calc(2dvh + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
